@@ -16,6 +16,9 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
+from stock import views
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^api/stock/latest', views.get_latest)
 ]
