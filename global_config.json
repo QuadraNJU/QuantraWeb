@@ -1,0 +1,9 @@
+{
+  "db": {
+    "host": "dg.linghouyun.com",
+    "port": 18836,
+    "user": "quantra",
+    "pass": "Quantra_Mysql",
+    "db": "quantra"
+  }
+}
