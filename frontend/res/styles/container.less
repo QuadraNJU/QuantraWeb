@@ -1,0 +1,57 @@
+@import '../bootstrap/css/bootstrap.min.css';
+@import '../bootstrap/css/bootstrap-theme.min.css';
+@import '../bootstrap/css/font-awesome.min.css';
+
+body {
+  font-family: "Pingfang SC", "Source Han Sans SC", "Microsoft Yahei", Helvetica, Arial, sans-serif;
+  margin: 0;
+  position: absolute;
+  height: 100%;
+  display: flex;
+}
+
+#sidebar {
+  width: 300px;
+  height: 100%;
+  background-color: #023b53;
+  color: white;
+
+  .logo {
+    margin-top: 30px;
+    text-align: center;
+
+    img {
+      max-width: 200px;
+    }
+  }
+
+  #nav {
+    margin-top: 20px;
+
+    li {
+      font-size: 16px;
+
+      a {
+        padding-left: 50px;
+        color: rgba(204, 218, 234, 0.6);
+      }
+
+      a.act {
+        color: whitesmoke;
+      }
+
+      a:hover {
+        color: #333333;
+      }
+
+      i {
+        margin-right: 5px;
+      }
+    }
+  }
+}
+
+#container {
+  flex: 1;
+  padding: 10px 20px;
+}

@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet/less" type="text/css" href="{% static 'styles/container.less' %}">
+    <script async type="text/javascript" src="{% static 'js/less.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
+    <title>Quantra</title>
+</head>
+{% verbatim %}
+<body>
+<div id="sidebar">
+    <div class="logo">
+        <a href="/"><img src="res/images/logo.png"></a>
+    </div>
+    <div id="nav">
+        <ul class="nav nav-stacked">
+            <li role="presentation" data-view="market">
+                <a href="javascript:" v-bind:class="{ act: selected == 'market' }" v-on:click="navClick" data-view="market">
+                    市场
+                </a>
+                <a href="javascript:" v-bind:class="{ act: selected == 'stocklist' }" v-on:click="navClick" data-view="stocklist">
+                    股票
+                </a>
+                <a href="javascript:" v-bind:class="{ act: selected == 'compare' }" v-on:click="navClick" data-view="compare">
+                    对比
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+<div id="container">
+</div>
+
+<script type="text/javascript">
+    // app container
+    window.app = {
+        nav: new Vue({
+            el: '#nav',
+            data: {
+                selected: ''
+            },
+            methods: {
+                navClick: function (e) {
+                    app.loadView(e.target.dataset.view);
+                }
+            }
+        }),
+
+        loadView: function (name) {
+            window.location.hash = name;
+            app.nav.selected = name;
+            $('#container').load('res/views/' + name + '/index.html')
+        }
+    };
+
+    $(function () {
+        var hash = location.hash.substr(1);
+        if (hash != '') {
+            app.loadView(hash);
+        } else {
+            app.loadView('market');
+        }
+    });
+</script>
+</body>
+{% endverbatim %}
+</html>
