@@ -20,5 +20,5 @@ from stock import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^api/stock/latest', views.get_latest)
+    url(r'^api/stock/market/', views.market)
 ]
