@@ -23,5 +23,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', TemplateView.as_view(template_name='container.html')),
 
-    url(r'^api/stock/market', views.market)
+    url(r'^api/stock/market', views.market),
+    url(r'^api/stock/stock_list', views.stock_list),
+    url(r'^api/stock/stock', views.stock),
 ]
