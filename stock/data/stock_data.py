@@ -9,14 +9,20 @@ class StockData:
     def __conn(self):
         config = json.load(open('global_config.json'))
         if config['db']:
-            return MySQLdb.connect(host=config['db']['host'], port=config['db']['port'],
+            return MySQLdb.connect(host=config['db']['host'], port=config['db']['port'], charset='utf8',
                                    user=config['db']['user'], passwd=config['db']['pass'], db=config['db']['db'])
         else:
             return None
 
+    def get_index(self):
+        conn = self.__conn()
+        df = pd.read_sql('SELECT * FROM stock_index', conn, index_col='code')
+        conn.close()
+        return df
+
     def get_by_date(self, date):
         conn = self.__conn()
-        df = pd.read_sql('SELECT * FROM stock_data WHERE `date` = \'%s\'' % date, conn)
+        df = pd.read_sql('SELECT * FROM stock_data WHERE `date` = \'%s\'' % date, conn, index_col='code')
         conn.close()
         return df
 
@@ -26,11 +32,13 @@ class StockData:
         conn.close()
         return df
 
-    def get_last_date_info(self, date):
+    def get_yesterday_info(self, date):
         conn = self.__conn()
-        date = datetime.strptime(date, '%Y-%m-%d') - timedelta(days=1)
-        df = pd.read_sql('SELECT * FROM stock_data WHERE `date` = \'%s\'' % date, conn)
-        while df.empty:
-            date = date - timedelta(days=1)
-            df = pd.read_sql('SELECT * FROM stock_data WHERE `date` = \'%s\'' % date, conn)
-        return df
+        for i in range(1, 4):
+            date = datetime.strptime(date, '%Y-%m-%d') - timedelta(days=i)
+            df = pd.read_sql('SELECT * FROM stock_data WHERE `date` = \'%s\'' % date, conn, index_col='code')
+            if not df.empty:
+                conn.close()
+                return df
+        conn.close()
+        return pd.DataFrame()
