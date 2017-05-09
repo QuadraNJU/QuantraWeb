@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'stock',
 ]
 
 MIDDLEWARE = [
@@ -72,11 +73,15 @@ WSGI_APPLICATION = 'quantraweb.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'quantra',  # Or path to database file if using sqlite3.
+        # The following settings are not used with sqlite3:
+        'USER': 'quantra',
+        'PASSWORD': 'Quantra_Mysql',
+        'HOST': 'dg.linghouyun.com',  # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'PORT': '18836',  # Set to empty string for default.
     }
 }
 
