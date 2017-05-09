@@ -18,7 +18,7 @@ def market(request):
         'decline_limit': [],
         'decline_over_five_per': [],
     }
-    date = datetime.strptime(request.GET['date'], format='%Y-%m-%d')
+    date = datetime.strptime(request.GET['date'], '%Y-%m-%d')
     index = StockData().get_index()
     info = StockData().get_by_date(date)
     info_yesterday = StockData().get_yesterday_info(date)
@@ -62,3 +62,29 @@ def stock_list(request):
         info[['code', 'name', 'raising', 'open', 'high', 'low', 'close', 'volume', 'close_last']].to_dict(
             orient='records'))
     )
+
+
+def stock(request):
+    result = {
+        'MA5': [],
+        'MA10': [],
+        'MA20': [],
+        'MA30': [],
+        'MA60': [],
+    }
+    date_start = datetime.strptime(request.GET['date_start'], '%Y-%m-%d')
+    date_end = datetime.strptime(request.GET['date_end'], '%Y-%m-%d')
+    code = int(request.GET['code'])
+
+    if date_start > date_end:
+        date_start = date_end - timedelta(days=1)
+    info = StockData().get_info(target_code=code, target_date=date_end)
+    info_5_days_before = StockData().get_days_before(date_end, 5)
+    info_5_days_before = info_5_days_before[info_5_days_before.index == code]
+
+    result['open'] = float(info_5_days_before['open'])
+    result['high'] = float(info_5_days_before['high'])
+    result['low'] = float(info_5_days_before['low'])
+    result['close'] = float(info_5_days_before['close'])
+
+    return HttpResponse(json.dumps(result))

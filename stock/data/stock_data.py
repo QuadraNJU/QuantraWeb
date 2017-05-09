@@ -14,7 +14,7 @@ class StockData:
         else:
             return None
 
-    def get_infos(self, target_code=None, target_date=None):
+    def get_info(self, target_code=None, target_date=None):
         conn = self.__conn()
         sql = 'SELECT * FROM stock_data'
         if target_code is not None and target_date is None:
@@ -23,7 +23,7 @@ class StockData:
             sql = 'SELECT * FROM stock_data WHERE `date` = \'{}\''.format(target_date)
         elif target_code is not None and target_date is not None:
             sql = 'SELECT * FROM stock_data WHERE `date` = \'%s\' AND `code` = %d' \
-                % (target_code, target_date)
+                % (target_date, target_code)
         df = pd.read_sql(sql, conn, index_col='code')
         conn.close()
         return df
@@ -35,10 +35,10 @@ class StockData:
         return df
 
     def get_by_date(self, date):
-        return self.get_infos(target_date=date)
+        return self.get_info(target_date=date)
 
     def get_by_code(self, code):
-        return self.get_infos(target_code=code)
+        return self.get_info(target_code=code)
 
     def get_yesterday_info(self, date):
         return self.get_days_before(date, 1)
