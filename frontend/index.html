@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="res/index.css">
+    <script type="text/javascript" src="res/jquery.min.js"></script>
+    <script type="text/javascript" src="res/vue.js"></script>
+    <title>Title</title>
+</head>
+{% verbatim %}
+<body>
+<header>
+
+</header>
+<div id="container">
+    <style type="text/css">
+        .thermometer {
+            width: 100%;
+            height: 25px;
+            border: 1px white solid;
+            display: flex;
+        }
+        .thermometer>div {
+            text-align: center;
+            flex: 1;
+            min-width: 10%;
+        }
+        .thermometer>div:nth-child(1) {
+            background-color: darkred;
+        }
+        .thermometer>div:nth-child(2) {
+            background-color: gray;
+        }
+        .thermometer>div:nth-child(3) {
+            background-color: darkgreen;
+        }
+    </style>
+    <div id="page_market">
+        <div class="thermometer">
+            <div v-bind:style="{ flex: surged }">上涨 ({{ surged }})</div>
+            <div v-bind:style="{ flex: balanced }">平盘 ({{ balanced }})</div>
+            <div v-bind:style="{ flex: declined }">下跌 ({{ declined }})</div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $.getJSON('/api/stock/market/?date=2017-3-1', function (result) {
+            new Vue({
+                el: '#page_market',
+                data: result
+            });
+        });
+    </script>
+</div>
+</body>
+{% endverbatim %}
+</html>

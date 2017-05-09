@@ -1,0 +1,18 @@
+body {
+    margin: 0;
+    background-image: url("bg.jpg");
+    background-size: cover;
+    color: whitesmoke;
+}
+
+header {
+    background: url("logo.png") no-repeat;
+    background-size: 200px;
+    background-position-y: center;
+    height: 100px;
+}
+
+header, #container {
+    width: 1000px;
+    margin: 0 auto;
+}
