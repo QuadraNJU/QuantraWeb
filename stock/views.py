@@ -21,8 +21,8 @@ def market(request):
     date = request.GET['date']
     stock_infos = StockData().get_by_date(date)
     stock_infos_last = StockData().get_last_date_info(date)
-    stock_infos['close_last'] = stock_infos_last['close']
     stock_infos['adjclose_last'] = stock_infos_last['adjclose']
+    stock_infos['close_last'] = stock_infos_last['close']
     stock_infos['other_rate'] = (stock_infos.open - stock_infos.close) / stock_infos.close_last
     stock_infos['raising'] = (stock_infos.adjclose_last - stock_infos.adjclose) / stock_infos.adjclose_last
     # 涨跌停
