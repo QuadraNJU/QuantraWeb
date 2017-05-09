@@ -14,6 +14,20 @@ class StockData:
         else:
             return None
 
+    def get_infos(self, target_code=None, target_date=None):
+        conn = self.__conn()
+        sql = 'SELECT * FROM stock_data'
+        if target_code is not None and target_date is None:
+            sql = 'SELECT * FROM stock_data WHERE `code` = ' + str(target_code)
+        elif target_code is None and target_date is not None:
+            sql = 'SELECT * FROM stock_data WHERE `date` = \'{}\''.format(target_date)
+        elif target_code is not None and target_date is not None:
+            sql = 'SELECT * FROM stock_data WHERE `date` = \'%s\' AND `code` = %d' \
+                % (target_code, target_date)
+        df = pd.read_sql(sql, conn, index_col='code')
+        conn.close()
+        return df
+
     def get_index(self):
         conn = self.__conn()
         df = pd.read_sql('SELECT * FROM stock_index', conn, index_col='code')
@@ -21,21 +35,18 @@ class StockData:
         return df
 
     def get_by_date(self, date):
-        conn = self.__conn()
-        df = pd.read_sql('SELECT * FROM stock_data WHERE `date` = \'%s\'' % date, conn, index_col='code')
-        conn.close()
-        return df
+        return self.get_infos(target_date=date)
 
     def get_by_code(self, code):
-        conn = self.__conn()
-        df = pd.read_sql('SELECT * FROM stock_data WHERE `code` = %d' % code, conn)
-        conn.close()
-        return df
+        return self.get_infos(target_code=code)
 
     def get_yesterday_info(self, date):
+        return self.get_days_before(date, 1)
+
+    def get_days_before(self, date, n):
         conn = self.__conn()
-        for i in range(1, 4):
-            date = datetime.strptime(date, '%Y-%m-%d') - timedelta(days=i)
+        for i in range(n, n+4):
+            date = date - timedelta(days=i)
             df = pd.read_sql('SELECT * FROM stock_data WHERE `date` = \'%s\'' % date, conn, index_col='code')
             if not df.empty:
                 conn.close()

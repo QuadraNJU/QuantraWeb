@@ -2,7 +2,9 @@
 from __future__ import unicode_literals
 
 import json
-
+from datetime import datetime, timedelta
+from time import time
+import pandas as pd
 from django.http import HttpResponse
 
 from stock.data.stock_data import StockData
@@ -16,15 +18,14 @@ def market(request):
         'decline_limit': [],
         'decline_over_five_per': [],
     }
-
-    date = request.GET['date']
+    date = datetime.strptime(request.GET['date'], format='%Y-%m-%d')
     index = StockData().get_index()
     info = StockData().get_by_date(date)
     info_yesterday = StockData().get_yesterday_info(date)
 
     info['name'] = index['name']
     info['adjclose_last'] = info_yesterday['adjclose']
-    info['raising'] = (info.adjclose_last - info.adjclose) / info.adjclose_last
+    info['raising'] = (info.adjclose - info.adjclose_last) / info.adjclose_last
 
     for code, stk in info.iterrows():
         line = {'code': int(code), 'name': stk['name'], 'close': stk['close'], 'rate': stk['raising']}
@@ -43,3 +44,21 @@ def market(request):
     result['declined'] = len(info[info.raising < 0])
 
     return HttpResponse(json.dumps(result))
+
+
+def stock_list(request):
+    date = datetime.strptime(request.GET['date'], '%Y-%m-%d')
+    info = StockData().get_by_date(date)
+    info_yesterday = StockData().get_yesterday_info(date)
+    index = StockData().get_index()
+
+    info['code'] = info.index
+    info['name'] = index['name']
+    info['close_last'] = info_yesterday['close']
+    info['adjclose_last'] = info_yesterday['adjclose']
+    info['raising'] = (info.adjclose - info.adjclose_last) / info.adjclose_last
+
+    return HttpResponse(json.dumps(
+        info[['code', 'name', 'raising', 'open', 'high', 'low', 'close', 'volume', 'close_last']].to_dict(
+            orient='records'))
+    )
