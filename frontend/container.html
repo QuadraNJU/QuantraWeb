@@ -3,11 +3,10 @@
 <html lang="zh-cn">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet/less" type="text/css" href="{% static 'styles/container.less' %}">
-    <script async type="text/javascript" src="{% static 'js/less.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/container.css' %}">
     <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/vue-strap.js' %}"></script>
     <title>Quantra</title>
 </head>
 {% verbatim %}
@@ -53,7 +52,18 @@
         loadView: function (name) {
             window.location.hash = name;
             app.nav.selected = name;
-            $('#container').load('res/views/' + name + '/index.html')
+            $('#container').load('res/views/' + name + '.html')
+        },
+
+        utils: {
+            formatCode: function (code) {
+                var s = '00000' + code;
+                return s.substr(s.length - 6);
+            },
+
+            formatPercent: function (pct) {
+                return Math.round(pct * 100) / 100 + '%';
+            }
         }
     };
 

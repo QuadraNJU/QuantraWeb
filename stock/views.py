@@ -3,8 +3,7 @@ from __future__ import unicode_literals
 
 import json
 from datetime import datetime, timedelta
-from time import time
-import pandas as pd
+
 from django.http import HttpResponse
 
 from stock.data.stock_data import StockData

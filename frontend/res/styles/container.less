@@ -1,18 +1,20 @@
 @import '../bootstrap/css/bootstrap.min.css';
-@import '../bootstrap/css/bootstrap-theme.min.css';
+// @import '../bootstrap/css/bootstrap-theme.min.css';
 @import '../bootstrap/css/font-awesome.min.css';
+
+html {
+  height: 100%;
+}
 
 body {
   font-family: "Pingfang SC", "Source Han Sans SC", "Microsoft Yahei", Helvetica, Arial, sans-serif;
   margin: 0;
-  position: absolute;
   height: 100%;
   display: flex;
 }
 
 #sidebar {
   width: 300px;
-  height: 100%;
   background-color: #023b53;
   color: white;
 
@@ -53,5 +55,6 @@ body {
 
 #container {
   flex: 1;
-  padding: 10px 20px;
+  padding: 20px 30px;
+  overflow-y: scroll;
 }

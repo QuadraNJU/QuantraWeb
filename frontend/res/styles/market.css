@@ -1,0 +1,17 @@
+#view_market .header {
+  display: flex;
+}
+#view_market .header h1 {
+  flex: 1;
+  margin: 0;
+}
+#view_market .progress {
+  margin-top: 10px;
+  height: 24px;
+  display: flex;
+}
+#view_market .progress .progress-bar {
+  font-size: 14px;
+  flex: 1;
+  min-width: 100px;
+}

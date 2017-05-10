@@ -1,0 +1,141 @@
+<link rel="stylesheet" href="res/styles/market.css">
+
+<div id="view_market">
+    <div class="header">
+        <h1>市场温度计</h1>
+        <div>
+            <i class="fa fa-calendar"></i> 日期选择
+            <datepicker v-model="date" :disabled-days-of-Week="disabled_days" format="yyyy-MM-dd"></datepicker>
+        </div>
+    </div>
+    <div class="progress">
+        <div class="progress-bar progress-bar-danger" v-bind:style="{ flex: market.surged }">
+            上涨 ({{ market.surged }})
+        </div>
+        <div class="progress-bar" v-bind:style="{ flex: market.balanced }">
+            持平 ({{ market.balanced }})
+        </div>
+        <div class="progress-bar progress-bar-success" v-bind:style="{ flex: market.declined }">
+            下跌 ({{ market.declined }})
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <h3>今日涨停 ({{ market.surged_limit.length }})</h3>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>股票代码</th>
+                    <th>股票名称</th>
+                    <th>收盘价</th>
+                    <th>涨幅</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="stk in market.surged_limit">
+                    <td>{{ code(stk.code) }}</td>
+                    <td>{{ stk.name }}</td>
+                    <td>{{ stk.close }}</td>
+                    <td>{{ percent(stk.rate) }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            <h3>今日跌停 ({{ market.decline_limit.length }})</h3>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>股票代码</th>
+                    <th>股票名称</th>
+                    <th>收盘价</th>
+                    <th>涨幅</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="stk in market.decline_limit">
+                    <td>{{ code(stk.code) }}</td>
+                    <td>{{ stk.name }}</td>
+                    <td>{{ stk.close }}</td>
+                    <td>{{ percent(stk.rate) }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <h3>上涨超 5% ({{ market.surged_over_five_per.length }})</h3>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>股票代码</th>
+                    <th>股票名称</th>
+                    <th>收盘价</th>
+                    <th>涨幅</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="stk in market.surged_over_five_per">
+                    <td>{{ code(stk.code) }}</td>
+                    <td>{{ stk.name }}</td>
+                    <td>{{ stk.close }}</td>
+                    <td>{{ percent(stk.rate) }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            <h3>下跌超 -5% ({{ market.decline_over_five_per.length }})</h3>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>股票代码</th>
+                    <th>股票名称</th>
+                    <th>收盘价</th>
+                    <th>涨幅</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="stk in market.decline_over_five_per">
+                    <td>{{ code(stk.code) }}</td>
+                    <td>{{ stk.name }}</td>
+                    <td>{{ stk.close }}</td>
+                    <td>{{ percent(stk.rate) }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    (function () {
+        var view_market = new Vue({
+            components: {
+                datepicker: VueStrap.datepicker,
+            },
+            el: '#view_market',
+            data: {
+                date: '2017-03-01',
+                disabled_days: [0, 6],
+                market: {}
+            },
+            methods: {
+                code: app.utils.formatCode,
+                percent: app.utils.formatPercent
+            }
+        });
+        var load_market = function () {
+            var date = view_market.date;
+            if (date != '') {
+                $.getJSON('/api/stock/market?date=' + date, function (result) {
+                    view_market.market = result;
+                });
+            }
+        };
+        load_market();
+    })();
+</script>
