@@ -9,6 +9,9 @@ body {
   height: 100%;
   display: flex;
 }
+.hidden {
+  display: none;
+}
 #sidebar {
   width: 300px;
   background-color: #023b53;
@@ -44,4 +47,8 @@ body {
   flex: 1;
   padding: 20px 30px;
   overflow-y: scroll;
+}
+#container .loading {
+  text-align: center;
+  margin-top: 100px;
 }

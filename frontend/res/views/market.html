@@ -119,23 +119,28 @@
             },
             el: '#view_market',
             data: {
-                date: '2017-03-01',
+                date: '',
                 disabled_days: [0, 6],
                 market: {}
+            },
+            watch: {
+                date: function () {
+                    var date = view_market.date;
+                    if (date != '') {
+                        app.loading.show();
+                        $.getJSON('/api/stock/market?date=' + date, function (result) {
+                            view_market.market = result;
+                        }).always(function () {
+                            app.loading.hide();
+                        });
+                    }
+                }
             },
             methods: {
                 code: app.utils.formatCode,
                 percent: app.utils.formatPercent
             }
         });
-        var load_market = function () {
-            var date = view_market.date;
-            if (date != '') {
-                $.getJSON('/api/stock/market?date=' + date, function (result) {
-                    view_market.market = result;
-                });
-            }
-        };
-        load_market();
+        view_market.date = app.dates.max;
     })();
 </script>

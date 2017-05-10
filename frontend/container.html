@@ -18,13 +18,16 @@
     <div id="nav">
         <ul class="nav nav-stacked">
             <li role="presentation" data-view="market">
-                <a href="javascript:" v-bind:class="{ act: selected == 'market' }" v-on:click="navClick" data-view="market">
+                <a href="javascript:" v-bind:class="{ act: selected == 'market' }" v-on:click="navClick"
+                   data-view="market">
                     市场
                 </a>
-                <a href="javascript:" v-bind:class="{ act: selected == 'stocklist' }" v-on:click="navClick" data-view="stocklist">
+                <a href="javascript:" v-bind:class="{ act: selected == 'stocklist' }" v-on:click="navClick"
+                   data-view="stocklist">
                     股票
                 </a>
-                <a href="javascript:" v-bind:class="{ act: selected == 'compare' }" v-on:click="navClick" data-view="compare">
+                <a href="javascript:" v-bind:class="{ act: selected == 'compare' }" v-on:click="navClick"
+                   data-view="compare">
                     对比
                 </a>
             </li>
@@ -32,6 +35,11 @@
     </div>
 </div>
 <div id="container">
+    <div class="loading" v-if="loading > 0">
+        <i class="fa fa-5x fa-refresh fa-spin"></i>
+    </div>
+    <div id="content" v-bind:class="{ hidden: loading > 0 }">
+    </div>
 </div>
 
 <script type="text/javascript">
@@ -49,10 +57,40 @@
             }
         }),
 
+        loading: new Vue({
+            el: '#container',
+            data: {
+                loading: 0
+            },
+            methods: {
+                show: function () {
+                    this.loading++;
+                },
+                hide: function () {
+                    this.loading--;
+                    if (this.loading < 0) this.loading = 0;
+                }
+            }
+        }),
+
         loadView: function (name) {
+            app.loading.show();
             window.location.hash = name;
             app.nav.selected = name;
-            $('#container').load('res/views/' + name + '.html')
+            $('#content').load('res/views/' + name + '.html', function () {
+                app.loading.hide();
+            });
+        },
+
+        dates: {
+            min: '',
+            max: '',
+            fetch: function () {
+                return $.getJSON('/api/stock/date_range').done(function (data) {
+                    app.dates.min = data.min;
+                    app.dates.max = data.max;
+                });
+            }
         },
 
         utils: {
@@ -62,18 +100,20 @@
             },
 
             formatPercent: function (pct) {
-                return Math.round(pct * 100) / 100 + '%';
+                return Math.round(pct * 10000) / 100 + '%';
             }
         }
     };
 
     $(function () {
-        var hash = location.hash.substr(1);
-        if (hash != '') {
-            app.loadView(hash);
-        } else {
-            app.loadView('market');
-        }
+        app.dates.fetch().always(function () {
+            var hash = location.hash.substr(1);
+            if (hash != '') {
+                app.loadView(hash);
+            } else {
+                app.loadView('market');
+            }
+        });
     });
 </script>
 </body>

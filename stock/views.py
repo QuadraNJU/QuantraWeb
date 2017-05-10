@@ -10,6 +10,11 @@ from stock.data.stock_data import StockData
 
 
 # Create your views here.
+def date_range(request):
+    min_date, max_date = StockData().get_date_range()
+    return HttpResponse(json.dumps({'min': str(min_date), 'max': str(max_date)}))
+
+
 def market(request):
     result = {
         'surged_limit': [],
