@@ -27,4 +27,6 @@ urlpatterns = [
     url(r'^api/stock/market', views.market),
     url(r'^api/stock/stock_list', views.stock_list),
     url(r'^api/stock/stock', views.stock),
+
+    url(r'^ws', views.ws_test),
 ]

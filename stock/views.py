@@ -2,9 +2,11 @@
 from __future__ import unicode_literals
 
 import json
+import time
 from datetime import datetime, timedelta
 
 from django.http import HttpResponse
+from dwebsocket import accept_websocket
 
 from stock.data.stock_data import StockData
 
@@ -92,3 +94,13 @@ def stock(request):
     result['close'] = float(info_5_days_before['close'])
 
     return HttpResponse(json.dumps(result))
+
+
+@accept_websocket
+def ws_test(request):
+    if request.is_websocket():
+        for i in range(0, 5):
+            request.websocket.send(str('Hello ' + str(i + 1) + ' / 5'))
+            time.sleep(1)
+    else:
+        return HttpResponse('This path accepts WebSocket connections.')
