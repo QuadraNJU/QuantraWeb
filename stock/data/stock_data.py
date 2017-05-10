@@ -3,6 +3,7 @@ from datetime import timedelta
 
 import MySQLdb
 import pandas as pd
+from datetime import timedelta, datetime
 
 
 class StockData:
@@ -59,5 +60,14 @@ class StockData:
             if not df.empty:
                 conn.close()
                 return df
+        conn.close()
+        return pd.DataFrame()
+
+    def get_a_stock_days_before(self, date, code, n):
+        conn = self.__conn()
+        df = pd.read_sql('SELECT * FROM stock_data WHERE `date` <= \'%s\'' % date, conn, index_col='code')
+        if not df.empty:
+            conn.close()
+            return df[0:n]
         conn.close()
         return pd.DataFrame()

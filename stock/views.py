@@ -2,12 +2,12 @@
 from __future__ import unicode_literals
 
 import json
-import time
-from datetime import datetime, timedelta
-
-from django.http import HttpResponse
+from datetime import datetime, timedelta, time
+from time import time as get_time
 from dwebsocket import accept_websocket
+from django.http import HttpResponse
 
+from stock.data import stock_util
 from stock.data.stock_data import StockData
 
 
@@ -24,7 +24,7 @@ def market(request):
         'decline_limit': [],
         'decline_over_five_per': [],
     }
-    date = datetime.strptime(request.GET['date'], '%Y-%m-%d')
+    date = datetime.strptime(request.GET['date'], '%Y-%m-%d').date()
     index = StockData().get_index()
     info = StockData().get_by_date(date)
     info_yesterday = StockData().get_yesterday_info(date)
@@ -53,7 +53,7 @@ def market(request):
 
 
 def stock_list(request):
-    date = datetime.strptime(request.GET['date'], '%Y-%m-%d')
+    date = datetime.strptime(request.GET['date'], '%Y-%m-%d').date()
     info = StockData().get_by_date(date)
     info_yesterday = StockData().get_yesterday_info(date)
     index = StockData().get_index()
@@ -78,22 +78,34 @@ def stock(request):
         'MA30': [],
         'MA60': [],
     }
-    date_start = datetime.strptime(request.GET['date_start'], '%Y-%m-%d')
-    date_end = datetime.strptime(request.GET['date_end'], '%Y-%m-%d')
+    date_start = datetime.strptime(request.GET['date_start'], '%Y-%m-%d').date()
+    date_end = datetime.strptime(request.GET['date_end'], '%Y-%m-%d').date()
     code = int(request.GET['code'])
 
     if date_start > date_end:
         date_start = date_end - timedelta(days=1)
-    info = StockData().get_info(target_code=code, target_date=date_end)
-    info_5_days_before = StockData().get_days_before(date_end, 5)
-    info_5_days_before = info_5_days_before[info_5_days_before.index == code]
+    infos = StockData().get_info(target_code=code)
+    infos = infos[infos.date <= date_end]
+    infos = infos[infos.date >= date_start]
+    t = get_time()
+    # for index, line in infos.iterrows():
+    #     result['MA5'].append(stock_util.MA_n(code, line['date'], 5))
+    #     result['MA10'].append(stock_util.MA_n(code, line['date'], 10))
+    #     result['MA20'].append(stock_util.MA_n(code, line['date'], 20))
+    #     result['MA30'].append(stock_util.MA_n(code, line['date'], 30))
+    #     result['MA60'].append(stock_util.MA_n(code, line['date'], 60))
+    # result['MA5'] = infos.apply(lambda line: stock_util.MA_n(code, line.date, 5), axis=1).tolist()
+    # result['MA10'] = infos.apply(lambda line: stock_util.MA_n(code, line.date, 10), axis=1).tolist()
+    # result['MA20'] = infos.apply(lambda line: stock_util.MA_n(code, line.date, 20), axis=1).tolist()
+    # result['MA30'] = infos.apply(lambda line: stock_util.MA_n(code, line.date, 30), axis=1).tolist()
+    # result['MA60'] = infos.apply(lambda line: stock_util.MA_n(code, line.date, 60), axis=1).tolist()
+    result['MA5'] = [stock_util.MA_n(code, line['date'], 5) for index, line in infos.iterrows()]
+    result['MA10'] = [stock_util.MA_n(code, line['date'], 10) for index, line in infos.iterrows()]
+    result['MA20'] = [stock_util.MA_n(code, line['date'], 20) for index, line in infos.iterrows()]
+    result['MA30'] = [stock_util.MA_n(code, line['date'], 30) for index, line in infos.iterrows()]
+    result['MA60'] = [stock_util.MA_n(code, line['date'], 60) for index, line in infos.iterrows()]
 
-    result['open'] = float(info_5_days_before['open'])
-    result['high'] = float(info_5_days_before['high'])
-    result['low'] = float(info_5_days_before['low'])
-    result['close'] = float(info_5_days_before['close'])
-
-    return HttpResponse(json.dumps(result))
+    return HttpResponse(get_time() - t)
 
 
 @accept_websocket
