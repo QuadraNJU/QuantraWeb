@@ -30,6 +30,8 @@ urlpatterns = [
 
     url(r'^api/stock/charts/volume_chart', views.volume_chart),
     url(r'^api/stock/charts/macd_chart', views.macd_chart),
+    url(r'^api/stock/charts/kdj_chart', views.kdj_chart),
+    url(r'^api/stock/charts/boll_chart', views.boll_chart),
 
     url(r'^ws', views.ws_test),
 ]

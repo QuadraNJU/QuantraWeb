@@ -104,9 +104,8 @@ def volume_chart(request):
 
     if date_start > date_end:
         date_start = date_end - timedelta(days=1)
-    infos = StockData().get_info(target_code=code)
-    infos = infos[infos.date <= date_end]
-    infos = infos[infos.date >= date_start]
+    infos = StockData().get_a_stock_with_date_range(date_start=date_start, date_end=date_end, code=code)
+
     result = stock_charts_util.volume(infos)
     return HttpResponse(json.dumps(result))
 
@@ -122,6 +121,32 @@ def macd_chart(request):
 
     macd = stock_charts_util.macd(infos)
     return HttpResponse(json.dumps(macd))
+
+
+def kdj_chart(request):
+    date_start = datetime.strptime(request.GET['date_start'], '%Y-%m-%d').date()
+    date_end = datetime.strptime(request.GET['date_end'], '%Y-%m-%d').date()
+    code = int(request.GET['code'])
+
+    if date_start > date_end:
+        date_start = date_end - timedelta(days=1)
+    infos = StockData().get_a_stock_with_date_range(date_start=date_start, date_end=date_end, code=code)
+    kdj = stock_charts_util.kdj(infos)
+
+    return HttpResponse(json.dumps(kdj))
+
+
+def boll_chart(request):
+    date_start = datetime.strptime(request.GET['date_start'], '%Y-%m-%d').date()
+    date_end = datetime.strptime(request.GET['date_end'], '%Y-%m-%d').date()
+    code = int(request.GET['code'])
+
+    if date_start > date_end:
+        date_start = date_end - timedelta(days=1)
+    infos = StockData().get_a_stock_with_date_range(date_start=date_start, date_end=date_end, code=code)
+    boll = stock_charts_util.boll(infos)
+
+    return HttpResponse(json.dumps(boll))
 
 
 @accept_websocket
