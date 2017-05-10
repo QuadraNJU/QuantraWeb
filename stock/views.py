@@ -7,7 +7,7 @@ from time import time as get_time
 from dwebsocket import accept_websocket
 from django.http import HttpResponse
 
-from stock.data import stock_util
+from stock.data import stock_util, stock_charts_util
 from stock.data.stock_data import StockData
 
 
@@ -88,17 +88,6 @@ def stock(request):
     infos = infos[infos.date <= date_end]
     infos = infos[infos.date >= date_start]
     t = get_time()
-    # for index, line in infos.iterrows():
-    #     result['MA5'].append(stock_util.MA_n(code, line['date'], 5))
-    #     result['MA10'].append(stock_util.MA_n(code, line['date'], 10))
-    #     result['MA20'].append(stock_util.MA_n(code, line['date'], 20))
-    #     result['MA30'].append(stock_util.MA_n(code, line['date'], 30))
-    #     result['MA60'].append(stock_util.MA_n(code, line['date'], 60))
-    # result['MA5'] = infos.apply(lambda line: stock_util.MA_n(code, line.date, 5), axis=1).tolist()
-    # result['MA10'] = infos.apply(lambda line: stock_util.MA_n(code, line.date, 10), axis=1).tolist()
-    # result['MA20'] = infos.apply(lambda line: stock_util.MA_n(code, line.date, 20), axis=1).tolist()
-    # result['MA30'] = infos.apply(lambda line: stock_util.MA_n(code, line.date, 30), axis=1).tolist()
-    # result['MA60'] = infos.apply(lambda line: stock_util.MA_n(code, line.date, 60), axis=1).tolist()
     result['MA5'] = [stock_util.MA_n(code, line['date'], 5) for index, line in infos.iterrows()]
     result['MA10'] = [stock_util.MA_n(code, line['date'], 10) for index, line in infos.iterrows()]
     result['MA20'] = [stock_util.MA_n(code, line['date'], 20) for index, line in infos.iterrows()]
@@ -106,6 +95,33 @@ def stock(request):
     result['MA60'] = [stock_util.MA_n(code, line['date'], 60) for index, line in infos.iterrows()]
 
     return HttpResponse(get_time() - t)
+
+
+def volume_chart(request):
+    date_start = datetime.strptime(request.GET['date_start'], '%Y-%m-%d').date()
+    date_end = datetime.strptime(request.GET['date_end'], '%Y-%m-%d').date()
+    code = int(request.GET['code'])
+
+    if date_start > date_end:
+        date_start = date_end - timedelta(days=1)
+    infos = StockData().get_info(target_code=code)
+    infos = infos[infos.date <= date_end]
+    infos = infos[infos.date >= date_start]
+    result = stock_charts_util.volume(infos)
+    return HttpResponse(json.dumps(result))
+
+
+def macd_chart(request):
+    date_start = datetime.strptime(request.GET['date_start'], '%Y-%m-%d').date()
+    date_end = datetime.strptime(request.GET['date_end'], '%Y-%m-%d').date()
+    code = int(request.GET['code'])
+
+    if date_start > date_end:
+        date_start = date_end - timedelta(days=1)
+    infos = StockData().get_a_stock_with_date_range(date_start=date_start, date_end=date_end, code=code)
+
+    macd = stock_charts_util.macd(infos)
+    return HttpResponse(json.dumps(macd))
 
 
 @accept_websocket

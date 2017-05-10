@@ -65,9 +65,20 @@ class StockData:
 
     def get_a_stock_days_before(self, date, code, n):
         conn = self.__conn()
-        df = pd.read_sql('SELECT * FROM stock_data WHERE `date` <= \'%s\'' % date, conn, index_col='code')
+        df = pd.read_sql('SELECT * FROM stock_data WHERE `date` < \'%s\' AND `code` = %d LIMIT %d' % (date, code, n),
+                         conn, index_col='code')
         if not df.empty:
             conn.close()
-            return df[0:n]
+            return df
+        conn.close()
+        return pd.DataFrame()
+
+    def get_a_stock_with_date_range(self, date_start, date_end, code):
+        conn = self.__conn()
+        df = pd.read_sql('SELECT * FROM stock_data WHERE `date` >= \'%s\' AND `date` <= \'%s\' AND `code` = %d'
+                         % (date_start, date_end, code), conn, index_col='code')
+        if not df.empty:
+            conn.close()
+            return df
         conn.close()
         return pd.DataFrame()
