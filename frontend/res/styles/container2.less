@@ -1,0 +1,79 @@
+@import '../bootstrap/css/bootstrap.min.css';
+// @import '../bootstrap/css/bootstrap-theme.min.css';
+@import '../bootstrap/css/font-awesome.min.css';
+
+body {
+  font-family: "Pingfang SC", "Source Han Sans SC", "Microsoft Yahei", Helvetica, Arial, sans-serif;
+  margin: 0;
+  background-color: #f9f9f9;
+}
+
+.hidden {
+  display: none;
+}
+
+header {
+  background-color: #023b53;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 50px;
+
+  >div:nth-child(1) {
+    flex: 1;
+
+    img {
+      max-height: 30px;
+    }
+  }
+
+  >div:nth-child(2) {
+    ul {
+      display: inline-block;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      float: left;
+      padding: 0 10px;
+
+      a {
+        color: rgba(204, 218, 234, .6);
+        text-decoration: none;
+      }
+
+      a.act, a:hover {
+        color: whitesmoke;
+      }
+    }
+  }
+}
+
+.home {
+  background: url("../images/home.png") no-repeat;
+  background-size: 100%;
+  text-align: center;
+  padding: 100px 0;
+
+  h1 {
+    margin: 0;
+    color: whitesmoke;
+    font-size: 42px;
+  }
+
+  h2 {
+    margin: 20px 0 0 0;
+    color: whitesmoke;
+    font-size: 28px;
+    font-weight: normal;
+  }
+
+  button {
+    margin: 50px 0 0 0;
+    padding: 10px 30px;
+    font-size: 20px;
+    font-weight: 300;
+  }
+}
