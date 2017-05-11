@@ -2,10 +2,11 @@
 from __future__ import unicode_literals
 
 import json
-from datetime import datetime, timedelta, time
-from time import time as get_time
-from dwebsocket import accept_websocket
+import time
+from datetime import datetime, timedelta
+
 from django.http import HttpResponse
+from dwebsocket import accept_websocket
 
 from stock.data import stock_util, stock_charts_util
 from stock.data.stock_data import StockData
@@ -18,7 +19,9 @@ def date_range(request):
 
 
 def market(request):
+    start = time.time()
     result = {
+        'volumes': {},
         'surged_limit': [],
         'surged_over_five_per': [],
         'decline_limit': [],
@@ -26,14 +29,22 @@ def market(request):
     }
     date = datetime.strptime(request.GET['date'], '%Y-%m-%d').date()
     index = StockData().get_index()
-    info = StockData().get_by_date(date)
-    info_yesterday = StockData().get_yesterday_info(date)
+    info = StockData().get_info(date=date, date_start=date - timedelta(days=14))
+    print time.time() - start
 
-    info['name'] = index['name']
-    info['adjclose_last'] = info_yesterday['adjclose']
-    info['raising'] = (info.adjclose - info.adjclose_last) / info.adjclose_last
+    dates = info['date'].drop_duplicates()
+    for row in dates:
+        result['volumes'][str(row)] = int(info[info['date'] == row]['volume'].sum())
+    print time.time() - start
 
-    for code, stk in info.iterrows():
+    info_today = info[info['date'] == date]
+    info_yesterday = info[info['date'] == date - timedelta(days=1)]
+
+    info_today['name'] = index['name']
+    info_today['adjclose_last'] = info_yesterday['adjclose']
+    info_today['raising'] = (info_today.adjclose - info_today.adjclose_last) / info_today.adjclose_last
+
+    for code, stk in info_today.iterrows():
         line = {'code': int(code), 'name': stk['name'], 'close': stk['close'], 'rate': stk['raising']}
         if stk['raising'] >= 0.1:
             result['surged_limit'].append(line)
@@ -44,11 +55,12 @@ def market(request):
         elif stk['raising'] < -0.05:
             result['decline_over_five_per'].append(line)
 
-    result['total'] = len(info)
-    result['surged'] = len(info[info.raising > 0])
-    result['balanced'] = len(info[info.raising == 0])
-    result['declined'] = len(info[info.raising < 0])
+    result['total'] = len(info_today)
+    result['surged'] = len(info_today[info_today.raising > 0])
+    result['balanced'] = len(info_today[info_today.raising == 0])
+    result['declined'] = len(info_today[info_today.raising < 0])
 
+    print time.time() - start
     return HttpResponse(json.dumps(result))
 
 
@@ -84,7 +96,7 @@ def stock(request):
 
     if date_start > date_end:
         date_start = date_end - timedelta(days=1)
-    infos = StockData().get_info(target_code=code)
+    infos = StockData().get_info(code=code)
     infos = infos[infos.date <= date_end]
     infos = infos[infos.date >= date_start]
     t = get_time()

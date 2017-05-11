@@ -9,6 +9,9 @@
   flex: 1;
   margin: 0;
 }
+#view_market .header .datepicker {
+  margin-left: 10px;
+}
 #view_market .progress {
   margin-top: 20px;
   height: 24px;
@@ -18,6 +21,10 @@
   font-size: 14px;
   flex: 1;
   min-width: 100px;
+}
+#view_market #volume_chart {
+  width: 100%;
+  height: 300px;
 }
 #view_market h3 {
   margin: 0;

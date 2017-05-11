@@ -1,84 +1,37 @@
 import json
-from datetime import timedelta
 
-import MySQLdb
 import pandas as pd
-from datetime import timedelta, datetime
+from sqlalchemy import table, create_engine, select, column
 
 
 class StockData:
-    def __conn(self):
+    def __init__(self):
         config = json.load(open('global_config.json'))
         if config['db']:
-            return MySQLdb.connect(host=config['db']['host'], port=config['db']['port'], charset='utf8',
-                                   user=config['db']['user'], passwd=config['db']['pass'], db=config['db']['db'])
-        else:
-            return None
+            self.conn = create_engine(
+                'mysql://%s:%s@%s:%d/%s?charset=utf8' %
+                (config['db']['user'], config['db']['pass'], config['db']['host'],
+                 config['db']['port'], config['db']['db'])
+            )
 
-    def get_info(self, target_code=None, target_date=None):
-        conn = self.__conn()
-        sql = 'SELECT * FROM stock_data'
-        if target_code is not None and target_date is None:
-            sql = 'SELECT * FROM stock_data WHERE `code` = ' + str(target_code)
-        elif target_code is None and target_date is not None:
-            sql = 'SELECT * FROM stock_data WHERE `date` = \'{}\''.format(target_date)
-        elif target_code is not None and target_date is not None:
-            sql = 'SELECT * FROM stock_data WHERE `date` = \'%s\' AND `code` = %d' \
-                  % (target_date, target_code)
-        df = pd.read_sql(sql, conn, index_col='code')
-        conn.close()
+    def get_info(self, code=None, date=None, date_start=None):
+        if code is None and date is None:
+            return pd.DataFrame()
+        s = select('*').select_from(table('stock_data')).order_by('date desc, code desc')
+        if code is not None:
+            s = s.where(column('code') == code)
+        if date is not None:
+            if date_start is not None:
+                s = s.where(column('date') <= date).where(column('date') >= date_start)
+            else:
+                s = s.where(column('date') == date)
+        df = pd.read_sql(s, self.conn, index_col='code')
         return df
 
     def get_index(self):
-        conn = self.__conn()
-        df = pd.read_sql('SELECT * FROM stock_index', conn, index_col='code')
-        conn.close()
-        return df
+        return pd.read_sql('SELECT * FROM stock_index', self.conn, index_col='code')
 
     def get_date_range(self):
-        conn = self.__conn()
-        cur = conn.cursor()
-        cur.execute('SELECT MIN(date), MAX(date) FROM stock_data')
-        data = cur.fetchone()
-        conn.close()
+        result = self.conn.execute('SELECT MIN(date), MAX(date) FROM stock_data')
+        data = result.fetchone()
         return data[0], data[1]
-
-    def get_by_date(self, date):
-        return self.get_info(target_date=date)
-
-    def get_by_code(self, code):
-        return self.get_info(target_code=code)
-
-    def get_yesterday_info(self, date):
-        return self.get_days_before(date, 1)
-
-    def get_days_before(self, date, n):
-        conn = self.__conn()
-        for i in range(n, n + 4):
-            date = date - timedelta(days=i)
-            df = pd.read_sql('SELECT * FROM stock_data WHERE `date` = \'%s\'' % date, conn, index_col='code')
-            if not df.empty:
-                conn.close()
-                return df
-        conn.close()
-        return pd.DataFrame()
-
-    def get_a_stock_days_before(self, date, code, n):
-        conn = self.__conn()
-        df = pd.read_sql('SELECT * FROM stock_data WHERE `date` < \'%s\' AND `code` = %d LIMIT %d' % (date, code, n),
-                         conn, index_col='code')
-        if not df.empty:
-            conn.close()
-            return df
-        conn.close()
-        return pd.DataFrame()
-
-    def get_a_stock_with_date_range(self, date_start, date_end, code):
-        conn = self.__conn()
-        df = pd.read_sql('SELECT * FROM stock_data WHERE `date` >= \'%s\' AND `date` <= \'%s\' AND `code` = %d'
-                         % (date_start, date_end, code), conn, index_col='code')
-        if not df.empty:
-            conn.close()
-            return df
-        conn.close()
-        return pd.DataFrame()
