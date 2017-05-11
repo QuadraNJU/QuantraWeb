@@ -13,22 +13,115 @@
 <body>
 <header>
     <div>
-        <img src="res/images/logo.png">
+        <a href="javascript:" onclick="app.loadView('home');">
+            <img src="res/images/logo.png">
+        </a>
     </div>
     <div>
-        <ul>
-            <li><a href="javascript:" class="act">首页</a></li>
-            <li><a href="javascript:">市场</a></li>
-            <li><a href="javascript:">行情</a></li>
-            <li><a href="javascript:">对比</a></li>
+        <ul id="nav">
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'home' }" v-on:click="navClick"
+                   data-view="home">
+                首页
+            </a></li>
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'market' }" v-on:click="navClick"
+                   data-view="market">
+                市场
+            </a></li>
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'stocklist' }" v-on:click="navClick"
+                   data-view="stocklist">
+                行情
+            </a></li>
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'compare' }" v-on:click="navClick"
+                   data-view="compare">
+                对比
+            </a></li>
         </ul>
     </div>
 </header>
-<div class="home">
-    <h1>非专业股票分析系统</h1>
-    <h2>我也不知道这里写啥，我也不知道这里写啥</h2>
-    <button type="button" class="btn btn-danger">开始你的摸鱼之旅</button>
+<div id="container">
+    <div class="loading" v-if="loading > 0">
+        <i class="mdi mdi-loading mdi-spin" style="font-size: 128px;"></i>
+    </div>
+    <div id="content" v-bind:class="{ hidden: loading > 0 }">
+    </div>
 </div>
+
+<script type="text/javascript">
+    // app container
+    window.app = {
+        nav: new Vue({
+            el: '#nav',
+            data: {
+                selected: ''
+            },
+            methods: {
+                navClick: function (e) {
+                    app.loadView(e.target.dataset.view);
+                }
+            }
+        }),
+
+        loading: new Vue({
+            el: '#container',
+            data: {
+                loading: 0
+            },
+            methods: {
+                show: function () {
+                    this.loading++;
+                },
+                hide: function () {
+                    this.loading--;
+                    if (this.loading < 0) this.loading = 0;
+                }
+            }
+        }),
+
+        loadView: function (name) {
+            app.loading.show();
+            window.location.hash = name;
+            app.nav.selected = name;
+            $('#content').load('res/views/' + name + '.html?' + new Date().getTime(), function () {
+                app.loading.hide();
+            });
+        },
+
+        dates: {
+            min: '',
+            max: '',
+            fetch: function () {
+                return $.getJSON('/api/stock/date_range').done(function (data) {
+                    app.dates.min = data.min;
+                    app.dates.max = data.max;
+                });
+            }
+        },
+
+        utils: {
+            formatCode: function (code) {
+                var s = '00000' + code;
+                return s.substr(s.length - 6);
+            },
+
+            formatPercent: function (pct) {
+                return Math.round(pct * 10000) / 100 + '%';
+            }
+        }
+    };
+
+    $(function () {
+        app.loading.show();
+        app.dates.fetch().always(function () {
+            app.loading.hide();
+            var hash = location.hash.substr(1);
+            if (hash != '') {
+                app.loadView(hash);
+            } else {
+                app.loadView('home');
+            }
+        });
+    });
+</script>
 </body>
 {% endverbatim %}
 </html>
