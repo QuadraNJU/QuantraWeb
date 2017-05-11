@@ -65,7 +65,7 @@ class StockData:
 
     def get_a_stock_days_before(self, date, code, n):
         conn = self.__conn()
-        df = pd.read_sql('SELECT * FROM stock_data WHERE `date` <= \'%s\' AND `code` = %d LIMIT %d' % (date, code, n),
+        df = pd.read_sql('SELECT * FROM stock_data WHERE `date` < \'%s\' AND `code` = %d LIMIT %d' % (date, code, n),
                          conn, index_col='code')
         if not df.empty:
             conn.close()

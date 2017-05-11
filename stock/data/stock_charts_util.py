@@ -62,7 +62,18 @@ def boll(infos):
     n = 20
     result = {'boll': [stock_util.MA_n(index, stk.date, n) for index, stk in infos.iterrows()]}
     infos = infos.append(stock_data.StockData().get_a_stock_days_before(date_start, code, n))
-    __std = [std(infos.close[i: i + n], ddof=1) for i in range(0, length)]
+    __std = [std(infos.close[i: i + n]) for i in range(0, length)]
     result['upper'] = [result['boll'][i] + 2 * __std[i] for i in range(0, length)]
     result['lower'] = [result['boll'][i] - 2 * __std[i] for i in range(0, length)]
     return result
+
+
+def psy(infos):
+    length = len(infos)
+    n = 12
+    code = infos.index[0]
+    date_start = min(infos.date)
+    infos = infos.append(stock_data.StockData().get_a_stock_days_before(date_start, code, n + 1))
+    day_raise = (infos[0: len(infos) - 1].close - infos[1: len(infos)].close).tolist()
+    raise_count = [len(filter(lambda x: x > 0, day_raise[i: i+n])) for i in range(0, length)]
+    return {'psy': [count * 1.0 / n * 100 for count in raise_count]}

@@ -149,6 +149,19 @@ def boll_chart(request):
     return HttpResponse(json.dumps(boll))
 
 
+def psy_chart(request):
+    date_start = datetime.strptime(request.GET['date_start'], '%Y-%m-%d').date()
+    date_end = datetime.strptime(request.GET['date_end'], '%Y-%m-%d').date()
+    code = int(request.GET['code'])
+
+    if date_start > date_end:
+        date_start = date_end - timedelta(days=1)
+    infos = StockData().get_a_stock_with_date_range(date_start=date_start, date_end=date_end, code=code)
+    psy = stock_charts_util.psy(infos)
+
+    return HttpResponse(json.dumps(psy))
+
+
 @accept_websocket
 def ws_test(request):
     if request.is_websocket():

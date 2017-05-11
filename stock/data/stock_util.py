@@ -4,7 +4,8 @@ from stock.data.stock_data import StockData
 
 
 def MA_n(code, date, n):
-    infos = StockData().get_a_stock_days_before(date, code, n)
+    infos = StockData().get_info(code, date)
+    infos = infos.append(StockData().get_a_stock_days_before(date, code, n-1))
     if len(infos) == n:
         return mean(infos.close)
     else:
@@ -20,7 +21,8 @@ def EMA(lis):
 
 
 def EMA_n(code, date, n):
-    infos = StockData().get_a_stock_days_before(date, code, n)
+    infos = StockData().get_info(code, date)
+    infos = infos.append(StockData().get_a_stock_days_before(date, code, n-1))
     if len(infos) == n:
         return EMA(infos.close.tolist())
     else:
