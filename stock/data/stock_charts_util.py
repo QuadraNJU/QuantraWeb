@@ -45,8 +45,8 @@ def kdj(infos):
     }
     infos = infos.append(stock_data.StockData().get_a_stock_days_before(date_start, code, n + 2 * m))
     for i in range(0, len(infos) - n):
-        llv = min(infos.close[i: i + n])
-        hhv = max(infos.close[i: i + n])
+        llv = min(infos.low[i: i + n])
+        hhv = max(infos.high[i: i + n])
         rsv.append((infos.close.tolist()[i] - llv) / (hhv - llv) * 100)
     result['k'] = [mean(rsv[i - m: i]) for i in range(m, len(rsv))]
     result['d'] = [mean(result['k'][i - m: i]) for i in range(m, len(result['k']))]
