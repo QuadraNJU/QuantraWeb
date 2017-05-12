@@ -78,7 +78,7 @@ def stock_list(request):
     info_today['raising'] = (info_today.adjclose - info_today.adjclose_last) / info_today.adjclose_last
 
     result = []
-    for code, row in info_today.iterrows():
+    for code, row in info_today.dropna().iterrows():
         result.append((int(code), row['name'], row['open'], row['high'], row['low'], row['close'], row['close_last'],
                        row['raising'], row['volume']))
 

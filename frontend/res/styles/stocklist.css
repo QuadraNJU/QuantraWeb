@@ -1,0 +1,13 @@
+#view_stocklist {
+  margin-top: 20px;
+}
+#view_stocklist .header {
+  display: flex;
+}
+#view_stocklist .header h1 {
+  flex: 1;
+  margin: 0;
+}
+#view_stocklist .header .datepicker {
+  margin-left: 10px;
+}
