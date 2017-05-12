@@ -1,3 +1,6 @@
+#view_market {
+  margin-top: 20px;
+}
 #view_market .header {
   display: flex;
 }
