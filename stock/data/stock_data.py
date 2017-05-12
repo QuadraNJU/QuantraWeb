@@ -14,7 +14,7 @@ class StockData:
                  config['db']['port'], config['db']['db'])
             )
 
-    def get_info(self, code=None, date=None, date_start=None):
+    def get_info(self, code=None, date=None, date_start=None, limit=-1):
         if code is None and date is None:
             return pd.DataFrame()
         s = select('*').select_from(table('stock_data')).order_by('date desc, code')
@@ -25,6 +25,8 @@ class StockData:
                 s = s.where(column('date') <= date).where(column('date') >= date_start)
             else:
                 s = s.where(column('date') == date)
+        if limit > 0:
+            s = s.limit(limit)
         df = pd.read_sql(s, self.conn, index_col='code')
         return df
 

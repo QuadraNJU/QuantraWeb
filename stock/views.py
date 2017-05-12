@@ -86,30 +86,12 @@ def stock_list(request):
 
 
 def stock(request):
-    result = {
-        'MA5': [],
-        'MA10': [],
-        'MA20': [],
-        'MA30': [],
-        'MA60': [],
-    }
-    date_start = datetime.strptime(request.GET['date_start'], '%Y-%m-%d').date()
-    date_end = datetime.strptime(request.GET['date_end'], '%Y-%m-%d').date()
+    result = {}
     code = int(request.GET['code'])
-
-    if date_start > date_end:
-        date_start = date_end - timedelta(days=1)
-    infos = StockData().get_info(code=code)
-    infos = infos[infos.date <= date_end]
-    infos = infos[infos.date >= date_start]
-    t = get_time()
-    result['MA5'] = [stock_util.MA_n(code, line['date'], 5) for index, line in infos.iterrows()]
-    result['MA10'] = [stock_util.MA_n(code, line['date'], 10) for index, line in infos.iterrows()]
-    result['MA20'] = [stock_util.MA_n(code, line['date'], 20) for index, line in infos.iterrows()]
-    result['MA30'] = [stock_util.MA_n(code, line['date'], 30) for index, line in infos.iterrows()]
-    result['MA60'] = [stock_util.MA_n(code, line['date'], 60) for index, line in infos.iterrows()]
-
-    return HttpResponse(get_time() - t)
+    infos = StockData().get_info(code=code, limit=500)
+    for code, row in infos.dropna().iterrows():
+        result[str(row['date'])] = (row['open'], row['high'], row['low'], row['close'])
+    return HttpResponse(json.dumps(result))
 
 
 def volume_chart(request):
