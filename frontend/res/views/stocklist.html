@@ -1,12 +1,4 @@
-<style type="text/css">
-    .header {
-        display: flex;
-    }
-
-    .header h1 {
-        flex: 1;
-    }
-</style>
+<link rel="stylesheet" href="res/styles/stocklist.css">
 
 <div id="view_stocklist" class="fix-width">
     <div class="header">
@@ -33,7 +25,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="stk in stocks">
+                <tr v-for="stk in stocks" v-bind:class="{ red: stk[7] > 0, green: stk[7] < 0 }">
                     <td>{{ code(stk[0]) }}</td>
                     <td>{{ stk[1] }}</td>
                     <td>{{ percent(stk[7]) }}</td>

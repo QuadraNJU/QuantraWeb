@@ -11,3 +11,12 @@
 #view_stocklist .header .datepicker {
   margin-left: 10px;
 }
+#view_stocklist table {
+  margin-top: 10px;
+}
+#view_stocklist table .red {
+  color: #db5542;
+}
+#view_stocklist table .green {
+  color: #53b37b;
+}
