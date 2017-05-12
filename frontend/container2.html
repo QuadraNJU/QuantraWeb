@@ -29,13 +29,13 @@
                    data-view="market">
                 市场
             </a></li>
-            <li><a href="javascript:" v-bind:class="{ act: selected == 'realtime' }" v-on:click="navClick"
-                   data-view="realtime">
-                实时行情 (Beta)
-            </a></li>
             <li><a href="javascript:" v-bind:class="{ act: selected == 'stocklist' }" v-on:click="navClick"
                    data-view="stocklist">
                 行情
+            </a></li>
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'realtime' }" v-on:click="navClick"
+                   data-view="realtime">
+                实时行情 (Beta)
             </a></li>
             <li><a href="javascript:" v-bind:class="{ act: selected == 'compare' }" v-on:click="navClick"
                    data-view="compare">
