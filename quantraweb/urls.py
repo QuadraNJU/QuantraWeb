@@ -34,5 +34,5 @@ urlpatterns = [
     url(r'^api/stock/charts/boll_chart', views.boll_chart),
     url(r'^api/stock/charts/psy_chart', views.psy_chart),
 
-    url(r'^ws', views.ws_test),
+    url(r'^ws/realtime_price', views.realtime_price),
 ]

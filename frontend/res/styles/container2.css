@@ -8,6 +8,16 @@ body {
 .hidden {
   display: none;
 }
+.fix-width {
+  width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media all and (max-width: 1200px) {
+  .fix-width {
+    width: 100%;
+  }
+}
 header {
   background-color: #023b53;
   height: 50px;

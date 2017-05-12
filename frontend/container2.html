@@ -3,6 +3,7 @@
 <html lang="zh-cn">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <link rel="stylesheet" type="text/css" href="{% static 'styles/container2.css' %}">
     <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
@@ -27,6 +28,10 @@
             <li><a href="javascript:" v-bind:class="{ act: selected == 'market' }" v-on:click="navClick"
                    data-view="market">
                 市场
+            </a></li>
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'realtime' }" v-on:click="navClick"
+                   data-view="realtime">
+                实时行情 (Beta)
             </a></li>
             <li><a href="javascript:" v-bind:class="{ act: selected == 'stocklist' }" v-on:click="navClick"
                    data-view="stocklist">
@@ -85,6 +90,16 @@
             $('#content').load('res/views/' + name + '.html?' + new Date().getTime(), function () {
                 app.loading.hide();
             });
+        },
+
+        requests: {
+            ws: null,
+            wsConnect: function (path) {
+                if (app.requests.ws != null) {
+                    app.requests.ws.close();
+                }
+                app.requests.ws = new WebSocket('ws://' + location.host + '/' + path);
+            }
         },
 
         dates: {

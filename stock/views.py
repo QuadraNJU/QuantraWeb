@@ -5,6 +5,7 @@ import json
 import time
 from datetime import datetime, timedelta
 
+import tushare as ts
 from django.http import HttpResponse
 from dwebsocket import accept_websocket
 
@@ -175,10 +176,24 @@ def psy_chart(request):
 
 
 @accept_websocket
-def ws_test(request):
+def realtime_price(request):
     if request.is_websocket():
-        for i in range(0, 5):
-            request.websocket.send(str('Hello ' + str(i + 1) + ' / 5'))
-            time.sleep(1)
+        while not request.websocket.closed:
+            if request.websocket.has_messages():
+                msg = request.websocket.read()
+                if msg is None:
+                    break
+            result = []
+            df = ts.get_today_ticks('000001')
+            print ''
+            today = datetime.now().strftime('%Y-%m-%d')
+            current_minute = ''
+            for _, row in df.iloc[::-1].iterrows():
+                minute = row['time'][:5]
+                if minute != current_minute:
+                    current_minute = minute
+                    result.append((today + ' ' + minute, row['price']))
+            request.websocket.send(json.dumps(result))
+            time.sleep(10)
     else:
         return HttpResponse('This path accepts WebSocket connections.')

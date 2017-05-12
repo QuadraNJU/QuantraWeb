@@ -1,0 +1,44 @@
+<div id="view_realtime">
+    <div id="realtime_chart" style="width: 100%; height: 600px;"></div>
+</div>
+
+<script type="text/javascript">
+    setTimeout(function () {
+        var chart = echarts.init(document.getElementById('realtime_chart'));
+        chart.showLoading();
+        app.requests.wsConnect('ws/realtime_price');
+        app.requests.ws.onmessage = function (msg) {
+            chart.hideLoading();
+            var prices = JSON.parse(msg.data);
+            chart.setOption({
+                xAxis: {
+                    type: 'time',
+                    min: '2017-05-12 09:30',
+                    max: '2017-05-12 15:00'
+                },
+                yAxis: {
+                    scale: true
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        dataZoom: {},
+                        restore: {},
+                        saveAsImage: {}
+                    }
+                },
+                series: [{
+                    name: '股价',
+                    type: 'line',
+                    data: prices
+                }]
+            });
+        };
+        app.requests.ws.onclose = function () {
+            console.log('ws closed');
+        };
+    }, 0);
+</script>
