@@ -145,15 +145,9 @@
                 percent: app.utils.formatPercent
             },
             updated: function () {
-                var keys = [], values = [];
-                for (var key in this.market.volumes) {
-                    keys.push(key);
-                    values.push(this.market.volumes[key]);
-                }
                 echarts.init(this.$el.querySelector('#volume_chart')).setOption({
                     xAxis: {
-                        data: keys,
-                        inverse: true
+                        type: 'time'
                     },
                     yAxis: {
                         scale: true
@@ -173,7 +167,7 @@
                     series: [{
                         name: '交易量',
                         type: 'line',
-                        data: values
+                        data: this.market.volumes
                     }]
                 });
             }

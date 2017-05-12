@@ -22,7 +22,7 @@ def date_range(request):
 def market(request):
     start = time.time()
     result = {
-        'volumes': {},
+        'volumes': [],
         'surged_limit': [],
         'surged_over_five_per': [],
         'decline_limit': [],
@@ -35,7 +35,7 @@ def market(request):
 
     dates = info['date'].drop_duplicates()
     for row in dates:
-        result['volumes'][str(row)] = int(info[info['date'] == row]['volume'].sum())
+        result['volumes'].append((str(row), int(info[info['date'] == row]['volume'].sum())))
     print time.time() - start
 
     info_today = info[info['date'] == date]
@@ -67,20 +67,22 @@ def market(request):
 
 def stock_list(request):
     date = datetime.strptime(request.GET['date'], '%Y-%m-%d').date()
-    info = StockData().get_by_date(date)
-    info_yesterday = StockData().get_yesterday_info(date)
+    info = StockData().get_info(date=date, date_start=date - timedelta(days=1))
+    info_today = info[info['date'] == date]
+    info_yesterday = info[info['date'] == date - timedelta(days=1)]
     index = StockData().get_index()
 
-    info['code'] = info.index
-    info['name'] = index['name']
-    info['close_last'] = info_yesterday['close']
-    info['adjclose_last'] = info_yesterday['adjclose']
-    info['raising'] = (info.adjclose - info.adjclose_last) / info.adjclose_last
+    info_today['name'] = index['name']
+    info_today['close_last'] = info_yesterday['close']
+    info_today['adjclose_last'] = info_yesterday['adjclose']
+    info_today['raising'] = (info_today.adjclose - info_today.adjclose_last) / info_today.adjclose_last
 
-    return HttpResponse(json.dumps(
-        info[['code', 'name', 'raising', 'open', 'high', 'low', 'close', 'volume', 'close_last']].to_dict(
-            orient='records'))
-    )
+    result = []
+    for code, row in info_today.iterrows():
+        result.append((int(code), row['name'], row['open'], row['high'], row['low'], row['close'], row['close_last'],
+                       row['raising'], row['volume']))
+
+    return HttpResponse(json.dumps(result))
 
 
 def stock(request):
