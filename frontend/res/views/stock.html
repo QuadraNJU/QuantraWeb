@@ -1,0 +1,41 @@
+<div id="view_stock">
+    <div id="k_chart" style="width: 100%; height: 600px;"></div>
+</div>
+
+<script type="text/javascript">
+    setTimeout(function () {
+        var chart = echarts.init(document.getElementById('k_chart'));
+        chart.showLoading();
+        $.getJSON('/api/stock/stock?code=1', function (result) {
+            chart.setOption({
+                xAxis: {
+                    data: result.dates,
+                    inverse: true
+                },
+                yAxis: {
+                    scale: true
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        dataZoom: {},
+                        restore: {},
+                        saveAsImage: {}
+                    }
+                },
+                series: [{
+                    name: '000001',
+                    type: 'candlestick',
+                    data: result.data
+                }]
+            });
+            chart.hideLoading();
+        });
+    }, 0);
+</script>
