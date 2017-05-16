@@ -25,7 +25,8 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="stk in stocks" v-bind:class="{ red: stk[7] > 0, green: stk[7] < 0 }">
+                <tr v-for="stk in stocks" v-bind:class="{ red: stk[7] > 0, green: stk[7] < 0 }"
+                    v-bind:data-code="stk[0]" v-on:click="rowClick">
                     <td>{{ code(stk[0]) }}</td>
                     <td>{{ stk[1] }}</td>
                     <td>{{ percent(stk[7]) }}</td>
@@ -56,6 +57,7 @@
                 date: function () {
                     var date = view_stocklist.date;
                     if (date != '') {
+                        app.views.setParam({date: date});
                         app.loading.show();
                         $.getJSON('/api/stock/stock_list?date=' + date, function (result) {
                             view_stocklist.stocks = result;
@@ -67,9 +69,17 @@
             },
             methods: {
                 code: app.utils.formatCode,
-                percent: app.utils.formatPercent
+                percent: app.utils.formatPercent,
+                rowClick: function (e) {
+                    debugger;
+                    app.views.load('stock', {code: e.currentTarget.dataset.code});
+                }
             }
         });
-        view_stocklist.date = app.dates.max;
+        if (app.views.param.date) {
+            view_stocklist.date = app.views.param.date;
+        } else {
+            view_stocklist.date = app.dates.max;
+        }
     })();
 </script>

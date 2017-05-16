@@ -10,11 +10,12 @@
         app.requests.ws.onmessage = function (msg) {
             chart.hideLoading();
             var prices = JSON.parse(msg.data);
+            var date = prices[0][0].substr(0, 10);
             chart.setOption({
                 xAxis: {
                     type: 'time',
-                    min: '2017-05-12 09:30',
-                    max: '2017-05-12 15:00'
+                    min: date + ' 09:30',
+                    max: date + ' 15:00'
                 },
                 yAxis: {
                     scale: true

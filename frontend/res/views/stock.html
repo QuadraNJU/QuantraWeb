@@ -6,15 +6,29 @@
     setTimeout(function () {
         var chart = echarts.init(document.getElementById('k_chart'));
         chart.showLoading();
-        $.getJSON('/api/stock/stock?code=1', function (result) {
+        var code = 1;
+        if (app.views.param.code) {
+            code = app.views.param.code;
+        }
+        $.getJSON('/api/stock/stock?code=' + code, function (result) {
             chart.setOption({
                 xAxis: {
-                    data: result.dates,
-                    inverse: true
+                    data: result.dates
                 },
                 yAxis: {
                     scale: true
                 },
+                dataZoom: [
+                    {
+                        type: 'inside',
+                        start: 90,
+                        end: 100
+                    },
+                    {
+                        show: true,
+                        type: 'slider'
+                    }
+                ],
                 tooltip: {
                     trigger: 'axis',
                     axisPointer: {
@@ -30,7 +44,6 @@
                     }
                 },
                 series: [{
-                    name: '000001',
                     type: 'candlestick',
                     data: result.data
                 }]

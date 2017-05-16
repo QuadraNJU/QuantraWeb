@@ -131,6 +131,7 @@
                 date: function () {
                     var date = view_market.date;
                     if (date != '') {
+                        app.views.setParam({date: date});
                         app.loading.show();
                         $.getJSON('/api/stock/market?date=' + date, function (result) {
                             view_market.market = result;
@@ -172,6 +173,10 @@
                 });
             }
         });
-        view_market.date = app.dates.max;
+        if (app.views.param.date) {
+            view_market.date = app.views.param.date;
+        } else {
+            view_market.date = app.dates.max;
+        }
     })();
 </script>

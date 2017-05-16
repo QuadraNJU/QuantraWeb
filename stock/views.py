@@ -89,7 +89,7 @@ def stock(request):
     result = {'dates': [], 'data': []}
     code = int(request.GET['code'])
     infos = StockData().get_info(code=code, limit=500)
-    for code, row in infos.dropna().iterrows():
+    for code, row in infos.iloc[::-1].dropna().iterrows():
         result['dates'].append(str(row['date']))
         result['data'].append((row['open'], row['close'], row['low'], row['high']))
     return HttpResponse(json.dumps(result))
