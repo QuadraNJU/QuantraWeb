@@ -41,7 +41,7 @@ header {
   align-items: center;
   padding: 0 50px;
 
-  >div:nth-child(1) {
+  >div:first-child {
     flex: 1;
 
     img {
@@ -50,6 +50,21 @@ header {
   }
 
   >div:nth-child(2) {
+    margin-right: 10px;
+
+    input {
+      width: 250px;
+      height: 28px;
+      border: none;
+      padding: 0 10px;
+      background-color: rgba(255, 255, 255, .1);
+      font-size: 14px;
+      line-height: 28px;
+      color: whitesmoke;
+    }
+  }
+
+  >div:last-child {
     ul {
       display: inline-block;
       list-style: none;

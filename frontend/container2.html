@@ -8,6 +8,7 @@
     <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vue-strap.js' %}"></script>
+    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap3-typeahead.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap-table.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/echarts.min.js' %}"></script>
     <title>Quantra</title>
@@ -19,6 +20,9 @@
         <a href="javascript:" onclick="app.views.load('home');">
             <img src="res/images/logo.png">
         </a>
+    </div>
+    <div>
+        <input id="search_box" type="text" placeholder="股票代码/名称/拼音首字母...">
     </div>
     <div>
         <ul id="nav">
@@ -124,13 +128,31 @@
             }
         },
 
-        dates: {
-            min: '',
-            max: '',
+        index: {
+            min_date: '',
+            max_date: '',
+            stocks: {},
             fetch: function () {
-                return $.getJSON('/api/stock/date_range').done(function (data) {
-                    app.dates.min = data.min;
-                    app.dates.max = data.max;
+                return $.getJSON('/api/stock/index').done(function (data) {
+                    app.index.min_date = data.min;
+                    app.index.max_date = data.max;
+                    app.index.stocks = data.index;
+                    var src = [];
+                    for (var code in data.index) {
+                        src.push(app.utils.formatCode(code) + ' ' + data.index[code].name + ' ' + data.index[code].pinyin);
+                    }
+                    $('#search_box').typeahead({
+                        source: src,
+                        items: 10,
+                        afterSelect: function (a) {
+                            $('#search_box').val('');
+                            var code = Number(a.split(' ')[0]);
+                            app.views.load('stock', {code: code});
+                        }
+                    });
+                    $('body').on('keypress', function (e) {
+                        $('#search_box').focus();
+                    });
                 });
             }
         },
@@ -149,7 +171,7 @@
 
     $(function () {
         app.loading.show();
-        app.dates.fetch().always(function () {
+        app.index.fetch().always(function () {
             app.loading.hide();
             var hash = location.hash.substr(1).split('?');
             if (hash[0] != '') {

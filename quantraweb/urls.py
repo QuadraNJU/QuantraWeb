@@ -23,16 +23,10 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', TemplateView.as_view(template_name='container2.html')),
 
-    url(r'^api/stock/date_range', views.date_range),
+    url(r'^api/stock/index', views.get_index),
     url(r'^api/stock/market', views.market),
     url(r'^api/stock/stock_list', views.stock_list),
     url(r'^api/stock/stock', views.stock),
-
-    url(r'^api/stock/charts/volume_chart', views.volume_chart),
-    url(r'^api/stock/charts/macd_chart', views.macd_chart),
-    url(r'^api/stock/charts/kdj_chart', views.kdj_chart),
-    url(r'^api/stock/charts/boll_chart', views.boll_chart),
-    url(r'^api/stock/charts/psy_chart', views.psy_chart),
 
     url(r'^ws/realtime_list', views.realtime_list),
     url(r'^ws/realtime_price', views.realtime_price),

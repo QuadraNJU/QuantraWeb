@@ -14,9 +14,11 @@ from stock.data.stock_data import StockData
 
 
 # Create your views here.
-def date_range(request):
+def get_index(request):
+    index = StockData().get_index()
     min_date, max_date = StockData().get_date_range()
-    return HttpResponse(json.dumps({'min': str(min_date), 'max': str(max_date)}))
+    return HttpResponse(json.dumps({'min': str(min_date), 'max': str(max_date),
+                                    'index': {int(code): row.to_dict() for code, row in index.iterrows()}}))
 
 
 def market(request):

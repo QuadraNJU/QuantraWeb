@@ -35,28 +35,41 @@ header {
   align-items: center;
   padding: 0 50px;
 }
-header > div:nth-child(1) {
+header > div:first-child {
   flex: 1;
 }
-header > div:nth-child(1) img {
+header > div:first-child img {
   max-height: 30px;
 }
-header > div:nth-child(2) ul {
+header > div:nth-child(2) {
+  margin-right: 10px;
+}
+header > div:nth-child(2) input {
+  width: 250px;
+  height: 28px;
+  border: none;
+  padding: 0 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+  line-height: 28px;
+  color: whitesmoke;
+}
+header > div:last-child ul {
   display: inline-block;
   list-style: none;
   padding: 0;
   margin: 0;
 }
-header > div:nth-child(2) li {
+header > div:last-child li {
   float: left;
   padding: 0 10px;
 }
-header > div:nth-child(2) li a {
+header > div:last-child li a {
   color: rgba(204, 218, 234, 0.6);
   text-decoration: none;
 }
-header > div:nth-child(2) li a.act,
-header > div:nth-child(2) li a:hover {
+header > div:last-child li a.act,
+header > div:last-child li a:hover {
   color: whitesmoke;
 }
 #container {
