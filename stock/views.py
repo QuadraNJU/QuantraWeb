@@ -86,12 +86,15 @@ def stock_list(request):
 
 
 def stock(request):
-    result = {'dates': [], 'data': []}
+    result = {'dates': [], 'data': [], 'volume': []}
     code = int(request.GET['code'])
     infos = StockData().get_info(code=code, limit=500)
+    index = StockData().get_index()
+    result['name'] = index['name'][code]
     for code, row in infos.iloc[::-1].dropna().iterrows():
         result['dates'].append(str(row['date']))
         result['data'].append((row['open'], row['close'], row['low'], row['high']))
+        result['volume'].append(row['volume'])
     return HttpResponse(json.dumps(result))
 
 

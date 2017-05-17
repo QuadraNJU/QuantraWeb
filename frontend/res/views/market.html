@@ -28,91 +28,23 @@
     <div class="row">
         <div class="col-md-6">
             <h3><i class="mdi mdi-36px mdi-trending-up"></i> 今日涨停 ({{ market.surged_limit.length }})</h3>
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>股票代码</th>
-                    <th>股票名称</th>
-                    <th>收盘价</th>
-                    <th>涨幅</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="stk in market.surged_limit">
-                    <td>{{ code(stk.code) }}</td>
-                    <td>{{ stk.name }}</td>
-                    <td>{{ stk.close }}</td>
-                    <td>{{ percent(stk.rate) }}</td>
-                </tr>
-                </tbody>
-            </table>
+            <minilist :stocks="market.surged_limit"></minilist>
         </div>
 
         <div class="col-md-6">
             <h3><i class="mdi mdi-36px mdi-trending-down"></i> 今日跌停 ({{ market.decline_limit.length }})</h3>
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>股票代码</th>
-                    <th>股票名称</th>
-                    <th>收盘价</th>
-                    <th>涨幅</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="stk in market.decline_limit">
-                    <td>{{ code(stk.code) }}</td>
-                    <td>{{ stk.name }}</td>
-                    <td>{{ stk.close }}</td>
-                    <td>{{ percent(stk.rate) }}</td>
-                </tr>
-                </tbody>
-            </table>
+            <minilist :stocks="market.decline_limit"></minilist>
         </div>
     </div>
     <div class="row">
         <div class="col-md-6">
             <h3><i class="mdi mdi-36px mdi-trending-up"></i> 上涨超 5% ({{ market.surged_over_five_per.length }})</h3>
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>股票代码</th>
-                    <th>股票名称</th>
-                    <th>收盘价</th>
-                    <th>涨幅</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="stk in market.surged_over_five_per">
-                    <td>{{ code(stk.code) }}</td>
-                    <td>{{ stk.name }}</td>
-                    <td>{{ stk.close }}</td>
-                    <td>{{ percent(stk.rate) }}</td>
-                </tr>
-                </tbody>
-            </table>
+            <minilist :stocks="market.surged_over_five_per"></minilist>
         </div>
 
         <div class="col-md-6">
             <h3><i class="mdi mdi-36px mdi-trending-down"></i> 下跌超 -5% ({{ market.decline_over_five_per.length }})</h3>
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>股票代码</th>
-                    <th>股票名称</th>
-                    <th>收盘价</th>
-                    <th>涨幅</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="stk in market.decline_over_five_per">
-                    <td>{{ code(stk.code) }}</td>
-                    <td>{{ stk.name }}</td>
-                    <td>{{ stk.close }}</td>
-                    <td>{{ percent(stk.rate) }}</td>
-                </tr>
-                </tbody>
-            </table>
+            <minilist :stocks="market.decline_over_five_per"></minilist>
         </div>
     </div>
 </div>
@@ -127,6 +59,19 @@
                 disabled_days: [0, 6],
                 market: {}
             },
+            components: {
+                'minilist': {
+                    template: '<table class="table table-hover"><thead><tr><th>股票代码</th><th>股票名称</th><th>收盘价</th><th>涨幅</th></tr></thead><tbody><tr v-for="stk in stocks" v-on:click="rowClick" v-bind:data-code="stk.code"><td>{{ code(stk.code) }}</td><td>{{ stk.name }}</td><td>{{ stk.close }}</td><td>{{ percent(stk.rate) }}</td></tr></tbody></table>',
+                    props: ['stocks'],
+                    methods: {
+                        code: app.utils.formatCode,
+                        percent: app.utils.formatPercent,
+                        rowClick: function (e) {
+                            app.views.load('stock', {code: e.currentTarget.dataset.code});
+                        }
+                    }
+                }
+            },
             watch: {
                 date: function () {
                     var date = view_market.date;
@@ -140,10 +85,6 @@
                         });
                     }
                 }
-            },
-            methods: {
-                code: app.utils.formatCode,
-                percent: app.utils.formatPercent
             },
             updated: function () {
                 echarts.init(this.$el.querySelector('#volume_chart')).setOption({

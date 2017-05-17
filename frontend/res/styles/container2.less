@@ -1,11 +1,18 @@
 @import '../bootstrap/css/bootstrap.min.css';
 // @import '../bootstrap/css/bootstrap-theme.min.css';
+@import '../bootstrap/css/bootstrap-table.min.css';
 @import '../bootstrap/css/materialdesignicons.min.css';
+
+html, body {
+  height: 100%;
+}
 
 body {
   font-family: "Pingfang SC", "Source Han Sans SC", "Microsoft Yahei", Helvetica, Arial, sans-serif;
-  margin: 0;
   background-color: #f9f9f9;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .hidden {
@@ -21,12 +28,13 @@ body {
 @media all and (max-width: 1200px) {
   .fix-width {
     width: 100%;
-    margin-left: 10px;
-    margin-left: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 }
 
 header {
+  flex-shrink: 0;
   background-color: #023b53;
   height: 50px;
   display: flex;
@@ -66,8 +74,14 @@ header {
 }
 
 #container {
+  flex: 1;
+
   .loading {
     margin-top: 50px;
     text-align: center;
+  }
+
+  #content {
+    height: 100%;
   }
 }

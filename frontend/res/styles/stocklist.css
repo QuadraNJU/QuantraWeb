@@ -20,3 +20,6 @@
 #view_stocklist table .green {
   color: #53b37b;
 }
+#view_stocklist table td {
+  cursor: pointer;
+}

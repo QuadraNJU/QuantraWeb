@@ -8,6 +8,7 @@
     <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vue-strap.js' %}"></script>
+    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap-table.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/echarts.min.js' %}"></script>
     <title>Quantra</title>
 </head>
@@ -31,7 +32,7 @@
             </a></li>
             <li><a href="javascript:" v-bind:class="{ act: selected == 'stocklist' }" v-on:click="navClick"
                    data-view="stocklist">
-                行情
+                历史行情
             </a></li>
             <li><a href="javascript:" v-bind:class="{ act: selected == 'realtime' }" v-on:click="navClick"
                    data-view="realtime">

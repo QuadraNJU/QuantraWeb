@@ -2,7 +2,7 @@
 
 <div id="view_stocklist" class="fix-width">
     <div class="header">
-        <h1>股票行情</h1>
+        <h1>股票历史行情</h1>
         <div>
             <i class="mdi mdi-18px mdi-calendar"></i> 日期选择
             <datepicker v-model="date" :disabled-days-of-Week="disabled_days" format="yyyy-MM-dd"></datepicker>
@@ -10,18 +10,18 @@
     </div>
     <div class="row">
         <div class="col-xs-12">
-            <table class="table">
+            <table id="table" class="table table-hover">
                 <thead>
                 <tr>
-                    <th>股票代码</th>
-                    <th>股票名称</th>
-                    <th>涨幅</th>
-                    <th>今收</th>
-                    <th>交易量</th>
-                    <th>今开</th>
-                    <th>最高</th>
-                    <th>最低</th>
-                    <th>昨收</th>
+                    <th data-sortable="true">股票代码</th>
+                    <th data-sortable="true">股票名称</th>
+                    <th data-sortable="true">涨幅</th>
+                    <th data-sortable="true">今收</th>
+                    <th data-sortable="true">交易量</th>
+                    <th data-sortable="true">今开</th>
+                    <th data-sortable="true">最高</th>
+                    <th data-sortable="true">最低</th>
+                    <th data-sortable="true">昨收</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -71,7 +71,6 @@
                 code: app.utils.formatCode,
                 percent: app.utils.formatPercent,
                 rowClick: function (e) {
-                    debugger;
                     app.views.load('stock', {code: e.currentTarget.dataset.code});
                 }
             }
