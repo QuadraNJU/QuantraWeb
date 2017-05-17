@@ -1,27 +1,190 @@
-<div id="view_realtime">
-    <div id="realtime_chart" style="width: 100%; height: 600px;"></div>
+<link rel="stylesheet" href="res/styles/realtime.css">
+
+<div id="view_realtime" class="container-fluid">
+    <div class="row">
+        <div id="realtime_chart" class="col-md-8 col-lg-9 stock_chart">
+        </div>
+        <div id="realtime_quotes" class="col-md-4 col-lg-3">
+            <div class="name">
+                {{ quotes.name }}
+                <span class="code">({{ quotes.code }})</span>
+            </div>
+            <div class="price" v-bind:class="{ red: rate > 0, green: rate < 0 }">
+                {{ quotes.price }}
+                <span v-if="rate >= 0" class="rate">
+                    ▲ {{ percent(rate) }}
+                </span>
+                <span v-else class="rate">
+                    ▼ {{ percent(rate) }}
+                </span>
+            </div>
+            <table class="table table-condensed">
+                <tbody>
+                <tr>
+                    <td>昨收</td>
+                    <td>{{ quotes.pre_close }}</td>
+                </tr>
+                <tr>
+                    <td>今开</td>
+                    <td>{{ quotes.open }}</td>
+                </tr>
+                <tr>
+                    <td>最高</td>
+                    <td>{{ quotes.high }}</td>
+                </tr>
+                <tr>
+                    <td>最低</td>
+                    <td>{{ quotes.low }}</td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="table table-condensed">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>价格</th>
+                    <th>成交量</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>卖五</td>
+                    <td>{{ quotes.a5_p }}</td>
+                    <td>{{ quotes.a5_v }}</td>
+                </tr>
+                <tr>
+                    <td>卖四</td>
+                    <td>{{ quotes.a4_p }}</td>
+                    <td>{{ quotes.a4_v }}</td>
+                </tr>
+                <tr>
+                    <td>卖三</td>
+                    <td>{{ quotes.a3_p }}</td>
+                    <td>{{ quotes.a3_v }}</td>
+                </tr><tr>
+                    <td>卖二</td>
+                    <td>{{ quotes.a2_p }}</td>
+                    <td>{{ quotes.a2_v }}</td>
+                </tr>
+                <tr>
+                    <td>卖一</td>
+                    <td>{{ quotes.a1_p }}</td>
+                    <td>{{ quotes.a1_v }}</td>
+                </tr>
+                <tr>
+                    <td>买一</td>
+                    <td>{{ quotes.b1_p }}</td>
+                    <td>{{ quotes.b1_v }}</td>
+                </tr>
+                <tr>
+                    <td>买二</td>
+                    <td>{{ quotes.b2_p }}</td>
+                    <td>{{ quotes.b2_v }}</td>
+                </tr>
+                <tr>
+                    <td>买三</td>
+                    <td>{{ quotes.b3_p }}</td>
+                    <td>{{ quotes.b3_v }}</td>
+                </tr>
+                <tr>
+                    <td>买四</td>
+                    <td>{{ quotes.b4_p }}</td>
+                    <td>{{ quotes.b4_v }}</td>
+                </tr>
+                <tr>
+                    <td>买五</td>
+                    <td>{{ quotes.b5_p }}</td>
+                    <td>{{ quotes.b5_v }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <script type="text/javascript">
+    var realtime_quotes = new Vue({
+        el: '#realtime_quotes',
+        data: {
+            quotes: {}
+        },
+        computed: {
+            rate: function () {
+                return (this.quotes.price - this.quotes.pre_close) / this.quotes.pre_close;
+            }
+        },
+        methods: {
+            code: app.utils.formatCode,
+            percent: app.utils.formatPercent
+        }
+    });
+
     setTimeout(function () {
         var chart = echarts.init(document.getElementById('realtime_chart'));
+        window.addEventListener('resize', function () {
+            chart.resize();
+        });
+
         chart.showLoading();
-        app.requests.wsConnect('ws/realtime_price');
+        var code = 1;
+        if (app.views.param.code) {
+            code = app.views.param.code;
+        }
+        app.requests.wsConnect('ws/realtime_price?code=' + code);
         app.requests.ws.onmessage = function (msg) {
-            chart.hideLoading();
-            var prices = JSON.parse(msg.data);
-            var date = prices[0][0].substr(0, 10);
+            var result = JSON.parse(msg.data);
+            realtime_quotes.quotes = result.quotes;
+            var prices = [], volumes = [];
+            for (var i = 0; i < result.ticks.length; i++) {
+                prices.push(result.ticks[i]);
+                volumes.push(result.ticks[i]);
+                prices.push(result.prices[i]);
+                volumes.push(result.volumes[i]);
+            }
+            var date = result.ticks[0].substr(0, 10);
             chart.setOption({
-                xAxis: {
-                    type: 'time',
-                    min: date + ' 09:30',
-                    max: date + ' 15:00'
-                },
-                yAxis: {
-                    scale: true
-                },
+                animation: false,
+                grid: [
+                    {
+                        right: 10,
+                        height: '60%'
+                    },
+                    {
+                        top: '75%',
+                        right: 10
+                    }
+                ],
+                xAxis: [
+                    {
+                        type: 'time',
+                        min: date + ' 09:30',
+                        max: date + ' 15:00'
+                    },
+                    {
+                        gridIndex: 1,
+                        axisLabel: {show: false},
+                        type: 'time',
+                        min: date + ' 09:30',
+                        max: date + ' 15:00'
+                    }
+                ],
+                yAxis: [
+                    {
+                        scale: true
+                    },
+                    {
+                        gridIndex: 1,
+                        scale: true
+                    }
+                ],
                 tooltip: {
-                    trigger: 'axis'
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                axisPointer: {
+                    link: [{xAxisIndex: [0, 1]}]
                 },
                 toolbox: {
                     show: true,
@@ -31,15 +194,23 @@
                         saveAsImage: {}
                     }
                 },
-                series: [{
-                    name: '股价',
-                    type: 'line',
-                    data: prices
-                }]
+                series: [
+                    {
+                        type: 'line',
+                        name: '价格',
+                        showSymbol: false,
+                        data: prices
+                    },
+                    {
+                        type: 'bar',
+                        name: '成交量',
+                        xAxisIndex: 1,
+                        yAxisIndex: 1,
+                        data: volumes
+                    }
+                ]
             });
-        };
-        app.requests.ws.onclose = function () {
-            console.log('ws closed');
+            chart.hideLoading();
         };
     }, 0);
 </script>

@@ -20,6 +20,9 @@
                     ▼ {{ percent(rate) }}
                 </span>
             </div>
+            <button class="btn btn-primary" v-on:click="rtClick">
+                <i class="mdi mdi-trending-up"></i> 进入实时行情
+            </button>
             <table class="table table-striped">
                 <tbody>
                 <tr>
@@ -59,7 +62,10 @@
         },
         methods: {
             fcode: app.utils.formatCode,
-            percent: app.utils.formatPercent
+            percent: app.utils.formatPercent,
+            rtClick: function () {
+                app.views.load('realtime', {code: this.code})
+            }
         }
     });
 

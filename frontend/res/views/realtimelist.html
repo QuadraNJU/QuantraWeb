@@ -1,0 +1,66 @@
+<link rel="stylesheet" href="res/styles/stocklist.css">
+
+<div id="view_stocklist" class="fix-width">
+    <div class="header">
+        <h1>股票实时行情 (Beta)</h1>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <table id="table" class="table table-hover">
+                <thead>
+                <tr>
+                    <th>股票代码</th>
+                    <th>股票名称</th>
+                    <th>涨幅</th>
+                    <th>现价</th>
+                    <th>成交量</th>
+                    <th>今开</th>
+                    <th>最高</th>
+                    <th>最低</th>
+                    <th>昨收</th>
+                    <th>换手率</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="stk in stocks" v-bind:class="{ red: stk[7] > 0, green: stk[7] < 0 }"
+                    v-bind:data-code="stk[0]" v-on:click="rowClick">
+                    <td>{{ code(stk[0]) }}</td>
+                    <td>{{ stk[1] }}</td>
+                    <td>{{ percent(stk[7]) }}</td>
+                    <td>{{ stk[5] }}</td>
+                    <td>{{ stk[8] }}</td>
+                    <td>{{ stk[2] }}</td>
+                    <td>{{ stk[3] }}</td>
+                    <td>{{ stk[4] }}</td>
+                    <td>{{ stk[6] }}</td>
+                    <td>{{ percent(stk[9]) }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    (function () {
+        var view_rtlist = new Vue({
+            el: '#view_stocklist',
+            data: {
+                stocks: []
+            },
+            methods: {
+                code: app.utils.formatCode,
+                percent: app.utils.formatPercent,
+                rowClick: function (e) {
+                    app.views.load('realtime', {code: e.currentTarget.dataset.code});
+                }
+            }
+        });
+        app.loading.show();
+        app.requests.wsConnect('ws/realtime_list');
+        app.requests.ws.onmessage = function (msg) {
+            view_rtlist.stocks = JSON.parse(msg.data);
+            app.loading.hide();
+        };
+    })();
+</script>

@@ -9,7 +9,7 @@ import tushare as ts
 from django.http import HttpResponse
 from dwebsocket import accept_websocket
 
-from stock.data import stock_util, stock_charts_util
+from stock.data import stock_charts_util
 from stock.data.stock_data import StockData
 
 
@@ -164,7 +164,7 @@ def psy_chart(request):
 
 
 @accept_websocket
-def realtime_price(request):
+def realtime_list(request):
     if request.is_websocket():
         while not request.websocket.closed:
             if request.websocket.has_messages():
@@ -172,15 +172,42 @@ def realtime_price(request):
                 if msg is None:
                     break
             result = []
-            df = ts.get_today_ticks('000001')
-            print ''
-            today = datetime.now().strftime('%Y-%m-%d')
-            current_minute = ''
+            start = time.time()
+            df = ts.get_today_all()
             for _, row in df.iloc[::-1].iterrows():
-                minute = row['time'][:5]
-                if minute != current_minute:
-                    current_minute = minute
-                    result.append((today + ' ' + minute, row['price']))
+                if row['volume'] > 0:
+                    result.append((row['code'], row['name'], row['open'], row['high'], row['low'], row['trade'],
+                                   row['settlement'], row['changepercent'] / 100, row['volume'], row['turnoverratio'] / 100))
+            request.websocket.send(json.dumps(result))
+            time.sleep(10)
+    else:
+        return HttpResponse('This path accepts WebSocket connections.')
+
+
+@accept_websocket
+def realtime_price(request):
+    if request.is_websocket():
+        while not request.websocket.closed:
+            if request.websocket.has_messages():
+                msg = request.websocket.read()
+                if msg is None:
+                    break
+            result = {'ticks': [], 'prices': [], 'volumes': []}
+            try:
+                df = ts.get_today_ticks('%06d' % int(request.GET['code']))
+                print ''
+                today = datetime.now().strftime('%Y-%m-%d')
+                current_minute = ''
+                for _, row in df.iloc[::-1].iterrows():
+                    minute = row['time'][:5]
+                    if minute != current_minute:
+                        current_minute = minute
+                        result['ticks'].append(today + ' ' + minute)
+                        result['prices'].append(row['price'])
+                        result['volumes'].append(row['volume'])
+            except:
+                pass
+            result['quotes'] = ts.get_realtime_quotes('%06d' % int(request.GET['code'])).iloc[0].to_dict()
             request.websocket.send(json.dumps(result))
             time.sleep(10)
     else:
