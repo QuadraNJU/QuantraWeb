@@ -298,6 +298,7 @@
                     },
                     {
                         top: '75%',
+                        bottom: 20,
                         right: 30
                     }
                 ],
@@ -329,11 +330,6 @@
                         xAxisIndex: [0, 1],
                         start: 90,
                         end: 100
-                    },
-                    {
-                        show: true,
-                        type: 'slider',
-                        xAxisIndex: [0, 1]
                     }
                 ],
                 tooltip: {
@@ -424,10 +420,13 @@
                 }
             };
             chart.on('datazoom', function (e) {
+                base_options.dataZoom[0].start = e.batch[0].start;
+                base_options.dataZoom[0].end = e.batch[0].end;
                 updateInfo(Math.floor(result.dates.length * e.batch[0].end / 100));
             });
             updateInfo(result.dates.length - 1);
             chart.hideLoading();
+            chart.resize();
         });
     }, 0);
 </script>
