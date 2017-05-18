@@ -136,10 +136,8 @@
             realtime_quotes.quotes = result.quotes;
             var prices = [], volumes = [];
             for (var i = 0; i < result.ticks.length; i++) {
-                prices.push(result.ticks[i]);
-                volumes.push(result.ticks[i]);
-                prices.push(result.prices[i]);
-                volumes.push(result.volumes[i]);
+                prices.push([result.ticks[i], result.prices[i]]);
+                volumes.push([result.ticks[i], result.volumes[i]]);
             }
             var date = result.ticks[0].substr(0, 10);
             chart.setOption({
@@ -165,7 +163,8 @@
                         axisLabel: {show: false},
                         type: 'time',
                         min: date + ' 09:30',
-                        max: date + ' 15:00'
+                        max: date + ' 15:00',
+                        boundaryGap: [0, 0]
                     }
                 ],
                 yAxis: [
@@ -206,6 +205,7 @@
                         name: '成交量',
                         xAxisIndex: 1,
                         yAxisIndex: 1,
+                        barWidth: '10%',
                         data: volumes
                     }
                 ]

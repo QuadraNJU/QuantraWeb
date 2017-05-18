@@ -42,10 +42,10 @@
                    data-view="realtimelist">
                 实时行情 (Beta)
             </a></li>
-            <li><a href="javascript:" v-bind:class="{ act: selected == 'compare' }" v-on:click="navClick"
+            <!--<li><a href="javascript:" v-bind:class="{ act: selected == 'compare' }" v-on:click="navClick"
                    data-view="compare">
                 对比
-            </a></li>
+            </a></li>-->
         </ul>
     </div>
 </header>
@@ -165,6 +165,24 @@
 
             formatPercent: function (pct) {
                 return Math.round(pct * 10000) / 100 + '%';
+            },
+
+            ma: function (arr) {
+                return arr.reduce(function (a, b) { return a + b; }) / arr.length;
+            },
+
+            ema: function (arr) {
+                var alpha = 2 / (arr.length + 1), sum = 0;
+                for (var i = 0; i < arr.length; i++) {
+                    sum += Math.pow(alpha, i) * arr[i];
+                }
+                return alpha * sum;
+            },
+
+            std: function (arr) {
+                var mean = this.ma(arr);
+                return Math.sqrt(arr.map(function (a) { return Math.pow(a - mean, 2) })
+                        .reduce(function (a, b) { return a + b; }) / arr.length);
             }
         }
     };

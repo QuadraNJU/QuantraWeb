@@ -4,7 +4,24 @@
     <div class="row">
         <div class="col-md-8 col-lg-9 stock_chart">
             <div id="k_chart"></div>
-            <div id="chart_select">图表切换（Coming Soon）</div>
+            <div id="chart_select">
+                图表切换
+                <span v-bind:class="{ act: selected == 'vol' }">
+                    <a href="javascript:" v-on:click="chartClick">VOL</a>
+                </span>
+                <span v-bind:class="{ act: selected == 'macd' }">
+                    <a href="javascript:" v-on:click="chartClick">MACD</a>
+                </span>
+                <span v-bind:class="{ act: selected == 'boll' }">
+                    <a href="javascript:" v-on:click="chartClick">BOLL</a>
+                </span>
+                <span v-bind:class="{ act: selected == 'kdj' }">
+                    <a href="javascript:" v-on:click="chartClick">KDJ</a>
+                </span>
+                <span v-bind:class="{ act: selected == 'psy' }">
+                    <a href="javascript:" v-on:click="chartClick">PSY</a>
+                </span>
+            </div>
         </div>
         <div id="stock_info" class="col-md-4 col-lg-3">
             <div class="name">
@@ -87,6 +104,176 @@
         return ma;
     };
 
+    var charts = {
+        vol: function (res) {
+            return [{
+                type: 'bar',
+                name: '交易量',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: res.volume
+            }];
+        },
+        macd: function (res) {
+            var short = 12, long = 26, mid = 9;
+            var dif = [], dea = [], macd = [];
+            for (var i = 0; i < res.data.length; i++) {
+                if (i < long - 1) {
+                    dif.push(null);
+                    dea.push(null);
+                    macd.push(null);
+                } else {
+                    dif.push(app.utils.ema(
+                        res.data.slice(i - long + 1, i + 1).map(function (d) {
+                            return d[1];
+                        })
+                    ));
+                    if (i < long + mid - 2) {
+                        dea.push(null);
+                        macd.push(null);
+                    } else {
+                        dea.push(app.utils.ema(dif.slice(i - mid + 1, i + 1)));
+                        macd.push((dif[i] - dea[i]) * 2);
+                    }
+                }
+            }
+            return [{
+                type: 'line',
+                name: 'DIF',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: dif
+            }, {
+                type: 'line',
+                name: 'DEA',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: dea
+            }, {
+                type: 'line',
+                name: 'MACD',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: macd
+            }];
+        },
+        boll: function (res) {
+            var m = 20;
+            var boll = [], ub = [], lb = [];
+            for (var i = 0; i < res.data.length; i++) {
+                if (i < m - 1) {
+                    boll.push(null);
+                    ub.push(null);
+                    lb.push(null);
+                } else {
+                    var sliced = res.data.slice(i - m + 1, i + 1).map(function (d) {
+                        return d[1];
+                    });
+                    boll.push(app.utils.ma(sliced));
+                    var sigma = app.utils.std(sliced);
+                    ub.push(boll[i] + 2 * sigma);
+                    lb.push(boll[i] - 2 * sigma);
+                }
+            }
+            return [{
+                type: 'line',
+                name: 'BOLL',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: boll
+            }, {
+                type: 'line',
+                name: 'BOLL-UB',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: ub
+            }, {
+                type: 'line',
+                name: 'BOLL-LB',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: lb
+            }];
+        },
+        kdj: function (res) {
+            var n = 9, m = 3;
+            var k = [], d = [], j = [], rsv = [];
+            for (var i = 0; i < res.data.length; i++) {
+                if (i < n - 1) {
+                    rsv.push(null);
+                    k.push(null);
+                    d.push(null);
+                    j.push(null);
+                } else {
+                    var sliced_n = res.data.slice(i - n + 1, i + 1);
+                    var llv = Math.min.apply(Math, sliced_n.map(function (d) {
+                        return d[2];
+                    }));
+                    var hhv = Math.max.apply(Math, sliced_n.map(function (d) {
+                        return d[3];
+                    }));
+                    rsv.push((res.data[i][1] - llv) / (hhv - llv) * 100);
+                    if (i < n + m - 2) {
+                        k.push(null);
+                        d.push(null);
+                        j.push(null);
+                    } else {
+                        k.push(app.utils.ma(rsv.slice(i - m + 1, i + 1)));
+                        if (i < n + 2 * m - 3) {
+                            d.push(null);
+                            j.push(null);
+                        } else {
+                            d.push(app.utils.ma(k.slice(i - m + 1, i + 1)));
+                            j.push(3 * k[i] - 2 * d[i]);
+                        }
+                    }
+                }
+            }
+            return [{
+                type: 'line',
+                name: 'K',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: k
+            }, {
+                type: 'line',
+                name: 'D',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: d
+            }, {
+                type: 'line',
+                name: 'J',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: j
+            }];
+        },
+        psy: function (res) {
+            var n = 12, psy = [];
+            for (var i = 0; i < res.data.length; i++) {
+                if (i < n) {
+                    psy.push(null);
+                } else {
+                    var count = 0;
+                    for (var j = i - n + 1; j <= i; j++) {
+                        if (res.data[j][1] > res.data[j - 1][1]) {
+                            count++;
+                        }
+                    }
+                    psy.push(count / n * 100);
+                }
+            }
+            return [{
+                type: 'line',
+                name: 'PSY',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: psy
+            }];
+        }
+    };
+
     setTimeout(function () {
         var chart = echarts.init(document.getElementById('k_chart'));
         window.addEventListener('resize', function () {
@@ -102,116 +289,128 @@
             stock_info.name = result.name;
             stock_info.code = code;
 
-            chart.setOption({
-                baseOption: {
-                    animation: false,
-                    grid: [
-                        {
-                            right: 30,
-                            height: '60%'
-                        },
-                        {
-                            top: '75%',
-                            right: 30
-                        }
-                    ],
-                    xAxis: [
-                        {
-                            data: result.dates
-                        },
-                        {
-                            gridIndex: 1,
-                            axisLabel: {show: false},
-                            data: result.dates
-                        }
-                    ],
-                    yAxis: [
-                        {
-                            scale: true
-                        },
-                        {
-                            gridIndex: 1,
-                            scale: true
-                        }
-                    ],
-                    legend: {
-                        data: ['MA5', 'MA10', 'MA20', 'MA30', 'MA60']
+            var base_options = {
+                animation: false,
+                grid: [
+                    {
+                        right: 30,
+                        height: '60%'
                     },
-                    dataZoom: [
-                        {
-                            type: 'inside',
-                            xAxisIndex: [0, 1],
-                            start: 90,
-                            end: 100
-                        },
-                        {
-                            show: true,
-                            type: 'slider',
-                            xAxisIndex: [0, 1]
-                        }
-                    ],
-                    tooltip: {
-                        trigger: 'axis',
-                        axisPointer: {
-                            type: 'cross'
-                        }
+                    {
+                        top: '75%',
+                        right: 30
+                    }
+                ],
+                xAxis: [
+                    {
+                        data: result.dates
                     },
-                    axisPointer: {
-                        link: [{xAxisIndex: [0, 1]}]
+                    {
+                        gridIndex: 1,
+                        axisLabel: {show: false},
+                        data: result.dates
+                    }
+                ],
+                yAxis: [
+                    {
+                        scale: true
                     },
-                    toolbox: {
+                    {
+                        gridIndex: 1,
+                        scale: true
+                    }
+                ],
+                legend: {
+                    data: ['MA5', 'MA10', 'MA20', 'MA30', 'MA60']
+                },
+                dataZoom: [
+                    {
+                        type: 'inside',
+                        xAxisIndex: [0, 1],
+                        start: 90,
+                        end: 100
+                    },
+                    {
                         show: true,
-                        feature: {
-                            dataZoom: {},
-                            restore: {},
-                            saveAsImage: {}
-                        }
-                    },
-                    series: [
-                        {
-                            type: 'candlestick',
-                            data: result.data
-                        },
-                        {
-                            type: 'line',
-                            showSymbol: false,
-                            name: 'MA5',
-                            data: calcMA(result.data, 5)
-                        },
-                        {
-                            type: 'line',
-                            showSymbol: false,
-                            name: 'MA10',
-                            data: calcMA(result.data, 10)
-                        },
-                        {
-                            type: 'line',
-                            showSymbol: false,
-                            name: 'MA20',
-                            data: calcMA(result.data, 20)
-                        },
-                        {
-                            type: 'line',
-                            showSymbol: false,
-                            name: 'MA30',
-                            data: calcMA(result.data, 30)
-                        },
-                        {
-                            type: 'line',
-                            showSymbol: false,
-                            name: 'MA60',
-                            data: calcMA(result.data, 60)
-                        },
-                        {
-                            type: 'bar',
-                            name: '交易量',
-                            xAxisIndex: 1,
-                            yAxisIndex: 1,
-                            data: result.volume
-                        }
-                    ]
+                        type: 'slider',
+                        xAxisIndex: [0, 1]
+                    }
+                ],
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                axisPointer: {
+                    link: [{xAxisIndex: [0, 1]}]
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        dataZoom: {},
+                        restore: {},
+                        saveAsImage: {}
+                    }
+                },
+                series: []
+            };
+            var base_series = [
+                {
+                    type: 'candlestick',
+                    data: result.data
+                },
+                {
+                    type: 'line',
+                    showSymbol: false,
+                    name: 'MA5',
+                    data: calcMA(result.data, 5)
+                },
+                {
+                    type: 'line',
+                    showSymbol: false,
+                    name: 'MA10',
+                    data: calcMA(result.data, 10)
+                },
+                {
+                    type: 'line',
+                    showSymbol: false,
+                    name: 'MA20',
+                    data: calcMA(result.data, 20)
+                },
+                {
+                    type: 'line',
+                    showSymbol: false,
+                    name: 'MA30',
+                    data: calcMA(result.data, 30)
+                },
+                {
+                    type: 'line',
+                    showSymbol: false,
+                    name: 'MA60',
+                    data: calcMA(result.data, 60)
+                }
+            ];
+
+            var chart_select = new Vue({
+                el: '#chart_select',
+                data: {
+                    selected: ''
+                },
+                watch: {
+                    selected: function () {
+                        base_options.series = base_series.concat(charts[this.selected](result));
+                        chart.setOption(base_options, true);
+                    }
+                },
+                methods: {
+                    chartClick: function (e) {
+                        this.selected = e.target.innerHTML.toLowerCase();
+                    }
                 }
             });
+            chart_select.selected = 'vol';
+
             var updateInfo = function (index) {
                 stock_info.close = result.data[index][1];
                 stock_info.open = result.data[index][0];

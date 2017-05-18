@@ -1,0 +1,44 @@
+#view_stock {
+  height: 100%;
+  padding-top: 20px;
+}
+#view_stock .row {
+  height: 100%;
+}
+#view_stock .row .stock_chart {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 10px;
+}
+#view_stock .row .stock_chart > div:first-child {
+  flex: 1;
+}
+#view_stock .row .stock_chart > div:last-child {
+  padding-left: 5%;
+}
+#view_stock .row .stock_chart > div:last-child span {
+  padding: 0 10px;
+}
+#view_stock .row .stock_chart > div:last-child span.act {
+  font-weight: bold;
+}
+#view_stock .row #stock_info .name {
+  font-size: 36px;
+}
+#view_stock .row #stock_info .price {
+  font-size: 48px;
+}
+#view_stock .row #stock_info .code,
+#view_stock .row #stock_info .rate {
+  font-size: 24px;
+}
+#view_stock .row #stock_info .red {
+  color: #db5542;
+}
+#view_stock .row #stock_info .green {
+  color: #53b37b;
+}
+#view_stock .row table {
+  margin-top: 10px;
+}

@@ -1,0 +1,30 @@
+#view_realtime {
+  height: 100%;
+  padding-top: 20px;
+}
+#view_realtime .row {
+  height: 100%;
+}
+#view_realtime .row .stock_chart {
+  height: 100%;
+  padding-bottom: 10px;
+}
+#view_realtime .row #realtime_quotes .name {
+  font-size: 36px;
+}
+#view_realtime .row #realtime_quotes .price {
+  font-size: 48px;
+}
+#view_realtime .row #realtime_quotes .code,
+#view_realtime .row #realtime_quotes .rate {
+  font-size: 24px;
+}
+#view_realtime .row #realtime_quotes .red {
+  color: #db5542;
+}
+#view_realtime .row #realtime_quotes .green {
+  color: #53b37b;
+}
+#view_realtime .row table {
+  margin-top: 10px;
+}
