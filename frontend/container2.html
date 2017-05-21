@@ -11,6 +11,11 @@
     <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap3-typeahead.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap-table.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/echarts.min.js' %}"></script>
+        <script src="https://cdn.bootcss.com/js-sha256/0.5.0/sha256.min.js"></script>
+    <script src="https://cdn.bootcss.com/js-cookie/latest/js.cookie.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-validate/1.16.0/jquery.validate.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-validate/1.16.0/additional-methods.min.js"></script>
+
     <title>Quantra</title>
 </head>
 {% verbatim %}
@@ -22,7 +27,7 @@
         </a>
     </div>
     <div>
-        <input id="search_box" type="text" placeholder="股票代码/名称/拼音首字母...">
+        <input id="searchBox" type="text" placeholder="股票代码/名称/拼音首字母...">
     </div>
     <div>
         <ul id="nav">
@@ -42,10 +47,10 @@
                    data-view="realtimelist">
                 实时行情 (Beta)
             </a></li>
-            <!--<li><a href="javascript:" v-bind:class="{ act: selected == 'compare' }" v-on:click="navClick"
-                   data-view="compare">
-                对比
-            </a></li>-->
+            <li><a id="logIcon" href="javascript:" v-bind:class="{ act: selected == 'login' }" v-on:click="navClick"
+                   data-view="login">
+                登录
+            </a></li>
         </ul>
     </div>
 </header>
@@ -115,6 +120,15 @@
                 $('#content').load('res/views/' + name + '.html?' + new Date().getTime(), function () {
                     app.loading.hide();
                 });
+            },
+            searchBoxFocus: function (enable) {
+                if (enable) {
+                    $('body').on('keypress', function (e) {
+                        $('#searchBox').focus();
+                    });
+                } else {
+                    $('body').off('keypress');
+                }
             }
         },
 
@@ -141,18 +155,16 @@
                     for (var code in data.index) {
                         src.push(app.utils.formatCode(code) + ' ' + data.index[code].name + ' ' + data.index[code].pinyin);
                     }
-                    $('#search_box').typeahead({
+                    $('#searchBox').typeahead({
                         source: src,
                         items: 10,
                         afterSelect: function (a) {
-                            $('#search_box').val('');
+                            $('#searchBox').val('');
                             var code = Number(a.split(' ')[0]);
                             app.views.load('stock', {code: code});
                         }
                     });
-                    $('body').on('keypress', function (e) {
-                        $('#search_box').focus();
-                    });
+                    app.views.searchBoxFocus(true);
                 });
             }
         },
@@ -168,7 +180,9 @@
             },
 
             ma: function (arr) {
-                return arr.reduce(function (a, b) { return a + b; }) / arr.length;
+                return arr.reduce(function (a, b) {
+                        return a + b;
+                    }) / arr.length;
             },
 
             ema: function (arr) {
@@ -181,8 +195,12 @@
 
             std: function (arr) {
                 var mean = this.ma(arr);
-                return Math.sqrt(arr.map(function (a) { return Math.pow(a - mean, 2) })
-                        .reduce(function (a, b) { return a + b; }) / arr.length);
+                return Math.sqrt(arr.map(function (a) {
+                        return Math.pow(a - mean, 2)
+                    })
+                        .reduce(function (a, b) {
+                            return a + b;
+                        }) / arr.length);
             }
         }
     };
