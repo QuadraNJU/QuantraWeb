@@ -1,0 +1,36 @@
+<script>
+    $(document).ready(function () {
+        app.views.searchBoxFocus(false);
+        $("#loginBtn").click(function () {
+            var username = $("#username").val();
+            var password = sha256($("#password").val());
+            $.post("api/society/login/", {'username': username, 'password': password}, function (ret) {
+                if (ret.ok) {
+                    Cookies.set('username', username, {expires: 1 / 24});
+                    Cookies.set('nickname', ret.nickname, {expires: 1 / 24});
+                    $('#logIcon').html(username).attr('data-view', 'logout');
+                    app.views.load('home');
+                } else {
+                    $('#username').val("");
+                    $('#password').val("");
+                }
+            })
+        });
+    });
+</script>
+
+<div id="society-login">
+
+    <title>登陆</title>
+
+    <body>
+    <h1>登陆页面：</h1>
+    <form>
+        用户名<input type="text" id="username" name="username" maxlength="20"/>
+        密码<input type="password" id="password" name="password" maxlength="18"/>
+        <input id="loginBtn" type="button" value="登陆"/>
+    </form>
+    <br>
+    <button onclick="app.views.load('regist');">注册</button>
+    </body>
+</div>
