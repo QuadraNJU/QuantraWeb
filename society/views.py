@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
 # 表单
-import hashlib
 
-from django import forms
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render, render_to_response
-from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.shortcuts import render_to_response
 
-from society.forms import RegisterForm, LoginForm
 from society.models import User
 
 
@@ -34,7 +29,7 @@ def regist(request):
         return JsonResponse({'ok': True})
 
 
-# 登陆
+# 登录
 def login(request):
     username = request.POST.get('username', '')
     password = request.POST.get('password', '')
