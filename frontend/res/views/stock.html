@@ -281,6 +281,9 @@
         });
 
         chart.showLoading();
+        setInterval(function () {
+            chart.resize();
+        }, 500);
         var code = 1;
         if (app.views.param.code) {
             code = app.views.param.code;
