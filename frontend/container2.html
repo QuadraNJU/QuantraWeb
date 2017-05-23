@@ -9,13 +9,9 @@
     <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vue-strap.js' %}"></script>
     <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap3-typeahead.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap-table.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/echarts.min.js' %}"></script>
-    <script src="https://cdn.bootcss.com/js-sha256/0.5.0/sha256.min.js"></script>
-    <script src="https://cdn.bootcss.com/js-cookie/latest/js.cookie.min.js"></script>
-    <script src="https://cdn.bootcss.com/jquery-validate/1.16.0/jquery.validate.min.js"></script>
-    <script src="https://cdn.bootcss.com/jquery-validate/1.16.0/additional-methods.min.js"></script>
-
+    <script type="text/javascript" src="{% static 'js/sha256.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/app.js' %}"></script>
     <title>Quantra</title>
 </head>
 {% verbatim %}
@@ -47,11 +43,75 @@
                    data-view="realtimelist">
                 实时行情 (Beta)
             </a></li>
-            <li><a id="logIcon" href="javascript:" v-bind:class="{ act: selected == 'login' }" v-on:click="navClick"
-                   data-view="login">
-                登录
-            </a></li>
         </ul>
+    </div>
+    <div id="userinfo">
+        <img src="res/images/nohead.jpg">
+        <span v-if="username != ''">
+            你好，{{username}}
+            <a href="javascript:" v-on:click="doLogout">退出</a>
+        </span>
+        <span v-else>
+            你好，请
+            <a href="javascript:" @click="showLogin = true">登录</a> 或
+            <a href="javascript:" @click="showReg = true">注册</a>
+        </span>
+        <modal v-model="showLogin" effect="fade">
+            <div slot="modal-header" class="modal-header">
+                <h4 class="modal-title">
+                    用户登录
+                </h4>
+            </div>
+            <div class="form-horizontal">
+                <div class="row">
+                    <label class="col-sm-2 control-label">用户名</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" v-model="input_username">
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 10px;">
+                    <label class="col-sm-2 control-label">密码</label>
+                    <div class="col-sm-6">
+                        <input type="password" class="form-control" v-model="input_password">
+                    </div>
+                </div>
+            </div>
+            <div slot="modal-footer" class="modal-footer">
+                <button type="button" class="btn btn-primary" v-on:click="doLogin">登录</button>
+                <button type="button" class="btn btn-default" @click="showLogin = false">关闭</button>
+            </div>
+        </modal>
+        <modal v-model="showReg" effect="fade">
+            <div slot="modal-header" class="modal-header">
+                <h4 class="modal-title">
+                    用户注册
+                </h4>
+            </div>
+            <div class="form-horizontal">
+                <div class="row">
+                    <label class="col-sm-2 control-label">用户名</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" v-model="input_username">
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 10px;">
+                    <label class="col-sm-2 control-label">密码</label>
+                    <div class="col-sm-6">
+                        <input type="password" class="form-control" v-model="input_password">
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 10px;">
+                    <label class="col-sm-2 control-label">确认密码</label>
+                    <div class="col-sm-6">
+                        <input type="password" class="form-control" v-model="input_password2">
+                    </div>
+                </div>
+            </div>
+            <div slot="modal-footer" class="modal-footer">
+                <button type="button" class="btn btn-primary" v-on:click="doRegister">注册</button>
+                <button type="button" class="btn btn-default" @click="showReg = false">关闭</button>
+            </div>
+        </modal>
     </div>
 </header>
 <div id="container">
@@ -63,9 +123,8 @@
 </div>
 
 <script type="text/javascript">
-    // app container
-    window.app = {
-        nav: new Vue({
+    (function () {
+        app.nav = new Vue({
             el: '#nav',
             data: {
                 selected: ''
@@ -75,137 +134,85 @@
                     app.views.load(e.target.dataset.view);
                 }
             }
-        }),
-
-        loading: new Vue({
+        });
+        app.loading = new Vue({
             el: '#container',
             data: {
                 loading: 0
             },
             methods: {
                 show: function () {
-                    this.loading++;
+                    this.loading = 1;
                 },
                 hide: function () {
-                    this.loading--;
-                    if (this.loading < 0) this.loading = 0;
+                    this.loading = 0;
                 }
             }
-        }),
+        });
 
-        views: {
-            name: '',
-            param: {},
-            setParam: function (param, clear) {
-                if (clear) {
-                    this.param = param;
-                } else if (param) {
-                    for (var key in param) {
-                        this.param[key] = param[key];
-                    }
-                }
-                var hash = this.name;
-                if (this.param) {
-                    hash += '?' + $.param(this.param);
-                } else {
-                    this.param = {};
-                }
-                window.location.hash = hash;
+        Vue.component('modal', VueStrap.modal);
+        var user_info = new Vue({
+            el: '#userinfo',
+            data: {
+                username: '',
+                showLogin: false,
+                showReg: false,
+                input_username: '',
+                input_password: '',
+                input_password2: ''
             },
-            load: function (name, param) {
-                app.loading.show();
-                this.name = name;
-                this.setParam(param, true);
-                app.nav.selected = name;
-                $('#content').load('res/views/' + name + '.html?' + new Date().getTime(), function () {
-                    app.loading.hide();
-                });
-            },
-            searchBoxFocus: function (enable) {
-                if (enable) {
-                    $('body').on('keypress', function (e) {
-                        $('#searchBox').focus();
-                    });
-                } else {
-                    $('body').off('keypress');
-                }
-            }
-        },
-
-        requests: {
-            ws: null,
-            wsConnect: function (path) {
-                if (app.requests.ws != null) {
-                    app.requests.ws.close();
-                }
-                app.requests.ws = new WebSocket('ws://' + location.host + '/' + path);
-            }
-        },
-
-        index: {
-            min_date: '',
-            max_date: '',
-            stocks: {},
-            fetch: function () {
-                return $.getJSON('/api/stock/index').done(function (data) {
-                    app.index.min_date = data.min;
-                    app.index.max_date = data.max;
-                    app.index.stocks = data.index;
-                    var src = [];
-                    for (var code in data.index) {
-                        src.push(app.utils.formatCode(code) + ' ' + data.index[code].name + ' ' + data.index[code].pinyin);
+            methods: {
+                doLogin: function (e) {
+                    if (this.input_username != '' && this.input_password != '') {
+                        e.target.disabled = true;
+                        $.post("/api/user/login", {
+                            username: this.input_username,
+                            password: sha256(this.input_password)
+                        }, function (ret) {
+                            if (ret.ok) {
+                                user_info.username = ret.username;
+                            } else {
+                                alert('登录失败: ' + ret.msg);
+                            }
+                            e.target.disabled = false;
+                            user_info.showLogin = false;
+                        });
                     }
-                    $('#searchBox').typeahead({
-                        source: src,
-                        items: 10,
-                        afterSelect: function (a) {
-                            $('#searchBox').val('');
-                            var code = Number(a.split(' ')[0]);
-                            app.views.load('stock', {code: code});
+                },
+                doRegister: function (e) {
+                    if (this.input_username != '' && this.input_password != '' && this.input_password == this.input_password2) {
+                        e.target.disabled = true;
+                        $.post("/api/user/register", {
+                            username: this.input_username,
+                            password: sha256(this.input_password)
+                        }, function (ret) {
+                            if (ret.ok) {
+                                user_info.username = ret.username;
+                            } else {
+                                alert('注册失败: ' + ret.msg);
+                            }
+                            e.target.disabled = false;
+                            user_info.showReg = false;
+                        });
+                    }
+                },
+                doLogout: function () {
+                    $.getJSON('/api/user/logout', function (ret) {
+                        if (ret.ok) {
+                            user_info.username = '';
                         }
                     });
-                    app.views.searchBoxFocus(true);
-                });
-            }
-        },
-
-        utils: {
-            formatCode: function (code) {
-                var s = '00000' + code;
-                return s.substr(s.length - 6);
-            },
-
-            formatPercent: function (pct) {
-                return Math.round(pct * 10000) / 100 + '%';
-            },
-
-            ma: function (arr) {
-                return arr.reduce(function (a, b) {
-                        return a + b;
-                    }) / arr.length;
-            },
-
-            ema: function (arr) {
-                var alpha = 2 / (arr.length + 1), sum = 0;
-                for (var i = 0; i < arr.length; i++) {
-                    sum += Math.pow(alpha, i) * arr[i];
                 }
-                return alpha * sum;
-            },
-
-            std: function (arr) {
-                var mean = this.ma(arr);
-                return Math.sqrt(arr.map(function (a) {
-                        return Math.pow(a - mean, 2)
-                    })
-                        .reduce(function (a, b) {
-                            return a + b;
-                        }) / arr.length);
             }
-        }
-    };
+        });
+        $.getJSON('/api/user/status', function (ret) {
+            if (ret && ret.status) {
+                user_info.username = ret.username;
+            } else {
+                user_info.username = '';
+            }
+        });
 
-    $(function () {
         app.loading.show();
         app.index.fetch().always(function () {
             app.loading.hide();
@@ -224,7 +231,7 @@
                 app.views.load('home');
             }
         });
-    });
+    })();
 </script>
 </body>
 {% endverbatim %}

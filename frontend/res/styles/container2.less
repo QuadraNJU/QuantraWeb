@@ -36,10 +36,21 @@ body {
 header {
   flex-shrink: 0;
   background-color: #023b53;
+  color: whitesmoke;
   height: 50px;
   display: flex;
   align-items: center;
   padding: 0 50px;
+
+  a {
+    color: rgba(204, 218, 234, .6);
+    text-decoration: none;
+  }
+
+  a.act, a:hover {
+    color: whitesmoke;
+    text-decoration: none;
+  }
 
   >div:first-child {
     flex: 1;
@@ -60,13 +71,11 @@ header {
       background-color: rgba(255, 255, 255, .1);
       font-size: 14px;
       line-height: 28px;
-      color: whitesmoke;
     }
   }
 
-  >div:last-child {
+  >div:nth-child(3) {
     ul {
-      display: inline-block;
       list-style: none;
       padding: 0;
       margin: 0;
@@ -75,15 +84,19 @@ header {
     li {
       float: left;
       padding: 0 10px;
+    }
+  }
 
-      a {
-        color: rgba(204, 218, 234, .6);
-        text-decoration: none;
-      }
+  >div:nth-child(4) {
+    margin-left: 10px;
+    img {
+      margin-right: 10px;
+      max-height: 35px;
+      border-radius: 50%;
+    }
 
-      a.act, a:hover {
-        color: whitesmoke;
-      }
+    .modal-dialog {
+      color: black;
     }
   }
 }

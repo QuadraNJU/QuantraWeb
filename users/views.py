@@ -28,7 +28,7 @@ def register(request):
         new_user.save()
         request.session['uid'] = new_user.id
         request.session['username'] = new_user.username
-        return JsonResponse({'ok': True})
+        return JsonResponse({'ok': True, 'username': username})
     except IntegrityError:
         return JsonResponse({'ok': False, 'msg': '用户名已被使用'})
     except:

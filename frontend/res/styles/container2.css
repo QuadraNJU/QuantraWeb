@@ -30,10 +30,20 @@ body {
 header {
   flex-shrink: 0;
   background-color: #023b53;
+  color: whitesmoke;
   height: 50px;
   display: flex;
   align-items: center;
   padding: 0 50px;
+}
+header a {
+  color: rgba(204, 218, 234, 0.6);
+  text-decoration: none;
+}
+header a.act,
+header a:hover {
+  color: whitesmoke;
+  text-decoration: none;
 }
 header > div:first-child {
   flex: 1;
@@ -52,25 +62,26 @@ header > div:nth-child(2) input {
   background-color: rgba(255, 255, 255, 0.1);
   font-size: 14px;
   line-height: 28px;
-  color: whitesmoke;
 }
-header > div:last-child ul {
-  display: inline-block;
+header > div:nth-child(3) ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-header > div:last-child li {
+header > div:nth-child(3) li {
   float: left;
   padding: 0 10px;
 }
-header > div:last-child li a {
-  color: rgba(204, 218, 234, 0.6);
-  text-decoration: none;
+header > div:nth-child(4) {
+  margin-left: 10px;
 }
-header > div:last-child li a.act,
-header > div:last-child li a:hover {
-  color: whitesmoke;
+header > div:nth-child(4) img {
+  margin-right: 10px;
+  max-height: 35px;
+  border-radius: 50%;
+}
+header > div:nth-child(4) .modal-dialog {
+  color: black;
 }
 #container {
   flex: 1;
