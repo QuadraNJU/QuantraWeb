@@ -1,0 +1,44 @@
+<link rel="stylesheet" href="res/styles/strategy.css">
+
+<div id="view_strategy" class="container-fluid">
+    <body>
+
+    <div class="left-fixed_right-auto">
+        <div class="left">
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'strategy1' }" v-on:click="navClick"
+                   data-view="strategy1">
+                策略1
+            </a></li>
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'strategy2' }" v-on:click="navClick"
+                   data-view="strategy1">
+                策略2
+            </a></li>
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'strategy3' }" v-on:click="navClick"
+                   data-view="strategy1">
+                策略3
+            </a></li>
+
+        </div>
+        <div class="right">
+            <div class="right-content">
+                <button type="button" class="btn btn-primary" onclick="">
+                    新建
+                </button>
+                <button type="button" class="btn btn-primary" onclick="">
+                    回测
+                </button>
+                <button type="button" class="btn btn-primary" onclick="">
+                    保存
+                </button>
+                <button type="button" class="btn btn-primary" onclick="">
+                    删除
+                </button>
+
+
+
+            </div>
+        </div>
+    </div>
+    </body>
+</div>
+
