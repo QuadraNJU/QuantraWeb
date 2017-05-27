@@ -43,6 +43,14 @@
                    data-view="realtimelist">
                 实时行情 (Beta)
             </a></li>
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'stockpool' }" v-on:click="navClick"
+                   data-view="stockpool">
+                股票池
+            </a></li>
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'strategy' }" v-on:click="navClick"
+                   data-view="strategy">
+                我的策略
+            </a></li>
         </ul>
     </div>
     <div id="userinfo">
