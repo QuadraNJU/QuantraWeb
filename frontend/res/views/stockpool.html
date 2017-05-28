@@ -1,88 +1,56 @@
-<link rel="stylesheet" href="res/styles/strategy.css">
+<link rel="stylesheet" href="res/styles/stockpool.css">
 
-<div id="view_strategy" class="container-fluid">
-    <body>
-
-    <div class="left-fixed_right-auto">
-        <div class="left">
+<div id="view_stockpool" class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 left">
             <h4>基本版块</h4>
-            <li><a href="javascript:" v-bind:class="{ act: selected == 'hushen300' }" v-on:click="navClick"
-                   data-view="hushen300">
-                沪深300
-            </a></li>
-            <li><a href="javascript:" v-bind:class="{ act: selected == 'zhongxiaoban' }" v-on:click="navClick"
-                   data-view="zhongxiaoban">
-                中小板
-            </a></li>
-            <li><a href="javascript:" v-bind:class="{ act: selected == 'chuangyeban' }" v-on:click="navClick"
-                   data-view="chuangyeban">
-                创业板
-            </a></li>
+            <div class="list">
+                <div>
+                    <i class="mdi mdi-format-list-bulleted"></i>
+                    沪深 300
+                </div>
+                <div class="act">
+                    <i class="mdi mdi-format-list-bulleted"></i>
+                    沪深 300
+                </div>
+            </div>
             <h4>行业版块</h4>
+            <div class="list">
+            </div>
             <h4>自选股票池</h4>
         </div>
-        <div class="right">
-            <div class="right-content"><div id="view_stocklist" class="fix-width">
-                <div class="header">
-                    <h1>沪深300</h1>
-                </div>
-                <div class="row">
-                    <div class="col-xs-12">
-                        <table id="table" class="table table-hover">
-                            <thead>
-                            <tr>
-                                <th>股票代码</th>
-                                <th>股票名称</th>
-                                <th>涨幅</th>
-                                <th>成交量</th>
-                                <th>今开</th>
-                                <th>昨收</th>
-
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="stk in stocks" v-bind:class="{ red: stk[7] > 0, green: stk[7] < 0 }"
-                                v-bind:data-code="stk[0]" v-on:click="rowClick">
-                                <td>{{ code(stk[0]) }}</td>
-                                <td>{{ stk[1] }}</td>
-                                <td>{{ percent(stk[7]) }}</td>
-                                <td>{{ stk[8] }}</td>
-                                <td>{{ stk[2] }}</td>
-                                <td>{{ stk[6] }}</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+        <div class="col-md-10">
+            <div class="header">
+                <h1>沪深300</h1>
             </div>
-
-            </div>
+            <table id="table" class="table table-hover">
+                <thead>
+                <tr>
+                    <th>股票代码</th>
+                    <th>股票名称</th>
+                    <th>涨幅</th>
+                    <th>成交量</th>
+                    <th>今开</th>
+                    <th>昨收</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="stk in stocks" v-bind:class="{ red: stk[7] > 0, green: stk[7] < 0 }"
+                    v-bind:data-code="stk[0]" v-on:click="rowClick">
+                    <td>{{ code(stk[0]) }}</td>
+                    <td>{{ stk[1] }}</td>
+                    <td>{{ percent(stk[7]) }}</td>
+                    <td>{{ stk[8] }}</td>
+                    <td>{{ stk[2] }}</td>
+                    <td>{{ stk[6] }}</td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
-    </body>
 </div>
 
 <script type="text/javascript">
-    (function () {
-        var view_rtlist = new Vue({
-            el: '#view_stocklist',
-            data: {
-                stocks: []
-            },
-            methods: {
-                code: app.utils.formatCode,
-                percent: app.utils.formatPercent,
-                rowClick: function (e) {
-                    app.views.load('realtime', {code: e.currentTarget.dataset.code});
-                }
-            }
-        });
-        app.loading.show();
-        app.requests.wsConnect('ws/realtime_list');
-        app.requests.ws.onmessage = function (msg) {
-            view_rtlist.stocks = JSON.parse(msg.data);
-            app.loading.hide();
-        };
-    })();
+
 </script>
 
