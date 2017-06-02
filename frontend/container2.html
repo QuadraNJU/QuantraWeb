@@ -35,17 +35,13 @@
                    data-view="market">
                 市场
             </a></li>
-            <li><a href="javascript:" v-bind:class="{ act: selected == 'stocklist' }" v-on:click="navClick"
-                   data-view="stocklist">
-                历史行情
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'stockpool' }" v-on:click="navClick"
+                   data-view="stockpool">
+                行情
             </a></li>
             <li><a href="javascript:" v-bind:class="{ act: selected == 'realtimelist' }" v-on:click="navClick"
                    data-view="realtimelist">
                 实时行情 (Beta)
-            </a></li>
-            <li><a href="javascript:" v-bind:class="{ act: selected == 'stockpool' }" v-on:click="navClick"
-                   data-view="stockpool">
-                股票池
             </a></li>
             <li><a href="javascript:" v-bind:class="{ act: selected == 'strategy' }" v-on:click="navClick"
                    data-view="strategy">

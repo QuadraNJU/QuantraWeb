@@ -1,7 +1,9 @@
 # coding=utf-8
+import json
 
 from django.http import JsonResponse
 
+from stock.data.stock_data import StockData
 from trade.models import StockPool
 
 
@@ -21,19 +23,20 @@ def createPool(request):
 
 
 def readPool(request):
+    stock_index = StockData().get_index()
+    result = {
+        'base': [
+            {'name': '沪深300', 'stocks': stock_index[stock_index.index < 2000].index.values.tolist()},
+            {'name': '中小板', 'stocks': stock_index[(stock_index.index >= 2000) & (stock_index.index < 3000)].index.values.tolist()},
+            {'name': '创业板', 'stocks': stock_index[stock_index.index >= 300000].index.values.tolist()},
+        ],
+        'industries': [{'id': int(id), 'name': row['name'], 'stocks': json.loads(row['stocks'])} for id, row in StockData().get_industries().iterrows()],
+        'custom': []
+    }
     if 'uid' in request.session:
         uid = request.session['uid']
-        id = request.POST.get('id', None)
-        pool = StockPool.objects.filter(uid=uid)
-        if id:
-            pool = pool.filter(id=id)
-        pool = list(pool.values('id', 'uid', 'name', 'stock_list'))
-        if pool:
-            return JsonResponse({'ok': True, 'pool_list': pool})
-        else:
-            return JsonResponse({'ok': False, 'msg': '获取股票池失败'})
-    else:
-        return JsonResponse({'ok': False, 'msg': '请登录后重试'})
+        result['custom'] = [{'id': pool.id, 'name': pool.name, 'stocks': json.loads(pool.stock_list)} for pool in StockPool.objects.filter(uid=uid)]
+    return JsonResponse(result)
 
 
 def updatePoolById(request):

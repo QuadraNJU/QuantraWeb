@@ -10,20 +10,51 @@
     height: 100%;
     padding: 0;
 
-    h4 {
-      padding-left: 20px;
+    button {
+      margin: 10px 20px;
     }
 
     .list {
       >div {
         height: 30px;
         line-height: 30px;
-        padding-left: 30px;
+        padding-left: 20px;
 
         &.act {
-          background-color: white;
+          color: #286090;
+          font-weight: bold;
         }
       }
+    }
+  }
+
+  .header {
+    display: flex;
+    margin-top: 20px;
+
+    h1 {
+      flex: 1;
+      margin: 0;
+    }
+
+    .datepicker {
+      margin-left: 10px;
+    }
+  }
+
+  table {
+    margin-top: 10px;
+
+    .red {
+      color: #db5542;
+    }
+
+    .green {
+      color: #53b37b;
+    }
+
+    td {
+      cursor: pointer;
     }
   }
 }

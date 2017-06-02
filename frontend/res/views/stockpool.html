@@ -3,35 +3,55 @@
 <div id="view_stockpool" class="container-fluid">
     <div class="row">
         <div class="col-md-2 left">
-            <h4>基本版块</h4>
-            <div class="list">
-                <div>
-                    <i class="mdi mdi-format-list-bulleted"></i>
-                    沪深 300
-                </div>
-                <div class="act">
-                    <i class="mdi mdi-format-list-bulleted"></i>
-                    沪深 300
-                </div>
-            </div>
-            <h4>行业版块</h4>
-            <div class="list">
-            </div>
-            <h4>自选股票池</h4>
+            <button class="btn btn-primary" v-if="selected.name" @click="selected = {}">显示所有股票</button>
+            <accordion type="info">
+                <panel is-open header="基本版块">
+                    <div class="list">
+                        <div v-for="pool in pools.base" @click="selected = pool" v-bind:class="{ act: selected.name == pool.name }">
+                            <i class="mdi mdi-format-list-bulleted"></i>
+                            {{ pool.name }}
+                        </div>
+                    </div>
+                </panel>
+                <panel header="行业版块">
+                    <div class="list">
+                        <div v-for="pool in pools.industries" @click="selected = pool" v-bind:class="{ act: selected.name == pool.name }">
+                            <i class="mdi mdi-format-list-bulleted"></i>
+                            {{ pool.name }}
+                        </div>
+                    </div>
+                </panel>
+                <panel header="自选股票池">
+                    <div class="list">
+                        <div v-for="pool in pools.custom" @click="selected = pool" v-bind:class="{ act: selected.name == pool.name }">
+                            <i class="mdi mdi-format-list-bulleted"></i>
+                            {{ pool.name }}
+                        </div>
+                    </div>
+                </panel>
+            </accordion>
         </div>
         <div class="col-md-10">
             <div class="header">
-                <h1>沪深300</h1>
+                <h1>{{ selected.name ? selected.name : '股票行情' }}</h1>
+                <div>
+                    <i class="mdi mdi-18px mdi-calendar"></i> 日期选择
+                    <datepicker v-model="date" :disabled-days-of-Week="disabled_days" format="yyyy-MM-dd"></datepicker>
+                </div>
             </div>
+            <spinner v-model="loading" size="xl" text="正在加载股票行情"></spinner>
             <table id="table" class="table table-hover">
                 <thead>
                 <tr>
-                    <th>股票代码</th>
-                    <th>股票名称</th>
-                    <th>涨幅</th>
-                    <th>成交量</th>
-                    <th>今开</th>
-                    <th>昨收</th>
+                    <th data-sortable="true">股票代码</th>
+                    <th data-sortable="true">股票名称</th>
+                    <th data-sortable="true">涨幅</th>
+                    <th data-sortable="true">今收</th>
+                    <th data-sortable="true">交易量</th>
+                    <th data-sortable="true">今开</th>
+                    <th data-sortable="true">最高</th>
+                    <th data-sortable="true">最低</th>
+                    <th data-sortable="true">昨收</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -40,8 +60,11 @@
                     <td>{{ code(stk[0]) }}</td>
                     <td>{{ stk[1] }}</td>
                     <td>{{ percent(stk[7]) }}</td>
+                    <td>{{ stk[5] }}</td>
                     <td>{{ stk[8] }}</td>
                     <td>{{ stk[2] }}</td>
+                    <td>{{ stk[3] }}</td>
+                    <td>{{ stk[4] }}</td>
                     <td>{{ stk[6] }}</td>
                 </tr>
                 </tbody>
@@ -51,6 +74,78 @@
 </div>
 
 <script type="text/javascript">
+    $(function () {
+        Vue.component('spinner', VueStrap.spinner);
+        Vue.component('datepicker', VueStrap.datepicker);
+        Vue.component('accordion', VueStrap.accordion);
+        Vue.component('panel', VueStrap.panel);
+        var view_stockpool = new Vue({
+            el: '#view_stockpool',
+            data: {
+                pools: {base: [], industries: [], custom: []},
+                selected: {},
+                stocks: [],
+                date: '',
+                disabled_days: [0, 6],
+                loading: true
+            },
+            methods: {
+                code: app.utils.formatCode,
+                percent: app.utils.formatPercent,
+                rowClick: function (e) {
+                    app.views.load('stock', {code: e.currentTarget.dataset.code});
+                }
+            },
+            watch: {
+                date: function () {
+                    var date = view_stockpool.date;
+                    if (date != '') {
+                        app.views.setParam({date: date});
+                        view_stockpool.stocks = [];
+                        this.loading = true;
+                        $.getJSON('/api/stock/stock_list?date=' + date, function (result) {
+                            stock_data = result;
+                            view_stockpool.selected = Object.assign({}, view_stockpool.selected);
+                        }).always(function () {
+                            view_stockpool.loading = false;
+                        });
+                    }
+                },
+                selected: function () {
+                    if (this.selected.stocks) {
+                        app.views.setParam({pool: this.selected.name});
+                        var tmp_stocks = [];
+                        for (var key in stock_data) {
+                            if (this.selected.stocks.indexOf(stock_data[key][0]) >= 0) {
+                                tmp_stocks.push(stock_data[key]);
+                            }
+                        }
+                        this.stocks = tmp_stocks;
+                    } else {
+                        app.views.setParam({pool: undefined});
+                        this.stocks = stock_data;
+                    }
+                }
+            }
+        });
+        var stock_data = [];
 
+        $.getJSON('/api/trade/pool/get', function (json) {
+            view_stockpool.pools = json;
+            if (app.views.param.pool) {
+                var merged = json.base.concat(json.industries).concat(json.custom);
+                for (var key in merged) {
+                    if (merged[key].name == app.views.param.pool) {
+                        view_stockpool.selected = merged[key];
+                    }
+                }
+            }
+        });
+        if (app.views.param.date) {
+            view_stockpool.date = app.views.param.date;
+        } else {
+            view_stockpool.date = app.index.max_date;
+        }
+    });
 </script>
 

@@ -9,14 +9,38 @@
   height: 100%;
   padding: 0;
 }
-#view_stockpool .left h4 {
-  padding-left: 20px;
+#view_stockpool .left button {
+  margin: 10px 20px;
 }
 #view_stockpool .left .list > div {
   height: 30px;
   line-height: 30px;
-  padding-left: 30px;
+  padding-left: 20px;
 }
 #view_stockpool .left .list > div.act {
-  background-color: white;
+  color: #286090;
+  font-weight: bold;
+}
+#view_stockpool .header {
+  display: flex;
+  margin-top: 20px;
+}
+#view_stockpool .header h1 {
+  flex: 1;
+  margin: 0;
+}
+#view_stockpool .header .datepicker {
+  margin-left: 10px;
+}
+#view_stockpool table {
+  margin-top: 10px;
+}
+#view_stockpool table .red {
+  color: #db5542;
+}
+#view_stockpool table .green {
+  color: #53b37b;
+}
+#view_stockpool table td {
+  cursor: pointer;
 }

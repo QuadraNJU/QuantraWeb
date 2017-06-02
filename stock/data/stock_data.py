@@ -37,3 +37,6 @@ class StockData:
         result = self.conn.execute('SELECT MIN(date), MAX(date) FROM stock_data')
         data = result.fetchone()
         return data[0], data[1]
+
+    def get_industries(self):
+        return pd.read_sql('SELECT * FROM stock_industries', self.conn, index_col='id')
