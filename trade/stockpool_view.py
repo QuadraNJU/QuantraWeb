@@ -7,17 +7,27 @@ from stock.data.stock_data import StockData
 from trade.models import StockPool
 
 
-def createPool(request):
-    if 'uid' in request.COOKIES:
-        uid = request.COOKIES['uid']
-        name = request.POST.get('name', None)
-        stock_list = request.POST.get('stock_list', None)
-        new_pool = StockPool(uid=uid, name=name, stock_list=stock_list)
+def updatePool(request):
+    if 'uid' in request.session:
+        uid = request.session['uid']
+        id = request.POST.get('id', None)
+        name = request.POST.get('name', '')
+        stock_list = request.POST.get('stocks', '[]')
+        if id is None:
+            new_pool = StockPool(uid=uid)
+        else:
+            new_pool = StockPool.objects.filter(id=id, uid=uid)
+            if new_pool:
+                new_pool = new_pool[0]
+            else:
+                new_pool = StockPool(uid=uid)
+        new_pool.name = name
+        new_pool.stock_list = stock_list
         try:
             new_pool.save()
             return JsonResponse({'ok': True})
         except:
-            return JsonResponse({'ok': False, 'msg': '服务器繁忙'})
+            return JsonResponse({'ok': False, 'msg': '服务器异常'})
     else:
         return JsonResponse({'ok': False, 'msg': '请登录后重试'})
 
@@ -39,20 +49,15 @@ def readPool(request):
     return JsonResponse(result)
 
 
-def updatePoolById(request):
+def getPoolById(request):
     if 'uid' in request.session:
         uid = request.session['uid']
-        id = request.POST.get('id', None)
-        try:
-            pool = StockPool.objects.filter(id=id, uid=uid)
-            if pool:
-                stock_list = request.POST.get('stock_list', pool[0].stock_list)
-                pool.update(stock_list=stock_list)
-                return JsonResponse({'ok': True})
-            else:
-                return JsonResponse({'ok': False, 'msg': '访问了不属于该用户的股票池，请重试'})
-        except:
-            return JsonResponse({'ok': False, 'msg': '获取股票池失败，无法更新'})
+        id = request.GET.get('id', None)
+        pool = StockPool.objects.filter(id=id, uid=uid)
+        if pool:
+            return JsonResponse({'ok': True, 'name': pool[0].name, 'stocks': json.loads(pool[0].stock_list)})
+        else:
+            return JsonResponse({'ok': False, 'msg': '股票池不存在'})
     else:
         return JsonResponse({'ok': False, 'msg': '请登录后重试'})
 
@@ -60,15 +65,15 @@ def updatePoolById(request):
 def deletePoolById(request):
     if 'uid' in request.session:
         uid = request.session['uid']
-        id = request.POST.get('id', None)
+        id = request.GET.get('id', None)
         pool = StockPool.objects.filter(id=id, uid=uid)
         if pool:
             (success, _) = pool.delete()
             response = {'ok': success}
             if not success:
-                response['msg'] = '删除股票池过程中出现异常，请刷新'
+                response['msg'] = '服务器异常'
             return JsonResponse(response)
         else:
-            return JsonResponse({'ok': False, 'msg': '访问了不属于该用户的股票池，请重试'})
+            return JsonResponse({'ok': False, 'msg': '股票池不存在'})
     else:
         return JsonResponse({'ok': False, 'msg': '请登录后重试'})

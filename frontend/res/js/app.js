@@ -36,7 +36,7 @@ var app = {
             $('#content').load('res/views/' + name + '.html?' + new Date().getTime(), function () {
                 app.loading.hide();
             });
-        },
+        }
     },
 
     requests: {
@@ -58,24 +58,6 @@ var app = {
                 app.index.min_date = data.min;
                 app.index.max_date = data.max;
                 app.index.stocks = data.index;
-                var src = [];
-                for (var code in data.index) {
-                    src.push(app.utils.formatCode(code) + ' ' + data.index[code].name + ' ' + data.index[code].pinyin);
-                }
-                $('#searchBox').typeahead({
-                    source: src,
-                    items: 10,
-                    afterSelect: function (a) {
-                        $('#searchBox').val('');
-                        var code = Number(a.split(' ')[0]);
-                        app.views.load('stock', {code: code});
-                    }
-                });
-                $('body').on('keypress', function (e) {
-                    if (e.target.nodeName != 'INPUT') {
-                        $('#searchBox').focus();
-                    }
-                });
             });
         }
     },

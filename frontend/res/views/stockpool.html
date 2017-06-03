@@ -3,8 +3,9 @@
 <div id="view_stockpool" class="container-fluid">
     <div class="row">
         <div class="col-md-2 left">
+            <spinner v-model="loading_pool" size="xl" text="正在加载股票池"></spinner>
             <button class="btn btn-primary" v-if="selected.name" @click="selected = {}">显示所有股票</button>
-            <accordion type="info">
+            <accordion type="info" v-if="!loading_pool">
                 <panel is-open header="基本版块">
                     <div class="list">
                         <div v-for="pool in pools.base" @click="selected = pool" v-bind:class="{ act: selected.name == pool.name }">
@@ -21,12 +22,18 @@
                         </div>
                     </div>
                 </panel>
-                <panel header="自选股票池">
+                <panel is-open header="自选股票池">
                     <div class="list">
+                        <span v-if="pools.custom.length == 0">
+                            暂无自选股票池
+                        </span>
                         <div v-for="pool in pools.custom" @click="selected = pool" v-bind:class="{ act: selected.name == pool.name }">
                             <i class="mdi mdi-format-list-bulleted"></i>
                             {{ pool.name }}
                         </div>
+                        <button class="btn btn-success" v-on:click="addPoolClick">
+                            <i class="mdi mdi-plus"></i> 新增自选股票池
+                        </button>
                     </div>
                 </panel>
             </accordion>
@@ -34,12 +41,20 @@
         <div class="col-md-10">
             <div class="header">
                 <h1>{{ selected.name ? selected.name : '股票行情' }}</h1>
+                <div v-if="selected.id">
+                    <button class="btn btn-primary" v-on:click="modifyClick">
+                        <i class="mdi mdi-pencil"></i> 修改
+                    </button>
+                    <button class="btn btn-danger" v-on:click="deleteClick">
+                        <i class="mdi mdi-delete"></i> 删除
+                    </button>
+                </div>
                 <div>
                     <i class="mdi mdi-18px mdi-calendar"></i> 日期选择
                     <datepicker v-model="date" :disabled-days-of-Week="disabled_days" format="yyyy-MM-dd"></datepicker>
                 </div>
             </div>
-            <spinner v-model="loading" size="xl" text="正在加载股票行情"></spinner>
+            <spinner v-model="loading_stock" size="xl" text="正在加载股票行情"></spinner>
             <table id="table" class="table table-hover">
                 <thead>
                 <tr>
@@ -71,6 +86,13 @@
             </table>
         </div>
     </div>
+    <modal title="确认" v-model="confirmDelete">
+        确定要删除这个策略吗？
+        <div slot="modal-footer" class="modal-footer">
+            <button type="button" class="btn btn-danger" v-on:click="deleteConfirm">确定删除</button>
+            <button type="button" class="btn btn-default" @click="confirmDelete = false">取消</button>
+        </div>
+    </modal>
 </div>
 
 <script type="text/javascript">
@@ -87,11 +109,27 @@
                 stocks: [],
                 date: '',
                 disabled_days: [0, 6],
-                loading: true
+                loading_pool: true,
+                loading_stock: true,
+                confirmDelete: false
             },
             methods: {
                 code: app.utils.formatCode,
                 percent: app.utils.formatPercent,
+                addPoolClick: function (e) {
+                    app.views.load('stockpool_edit');
+                },
+                modifyClick: function (e) {
+                    app.views.load('stockpool_edit', {id: this.selected.id});
+                },
+                deleteClick: function (e) {
+                    this.confirmDelete = true;
+                },
+                deleteConfirm: function (e) {
+                    $.post('/api/trade/pool/delete?id=' + this.selected.id).always(function () {
+                        app.views.load('stockpool', app.views.param);
+                    });
+                },
                 rowClick: function (e) {
                     app.views.load('stock', {code: e.currentTarget.dataset.code});
                 }
@@ -102,12 +140,12 @@
                     if (date != '') {
                         app.views.setParam({date: date});
                         view_stockpool.stocks = [];
-                        this.loading = true;
+                        this.loading_stock = true;
                         $.getJSON('/api/stock/stock_list?date=' + date, function (result) {
                             stock_data = result;
                             view_stockpool.selected = Object.assign({}, view_stockpool.selected);
                         }).always(function () {
-                            view_stockpool.loading = false;
+                            view_stockpool.loading_stock = false;
                         });
                     }
                 },
@@ -132,6 +170,7 @@
 
         $.getJSON('/api/trade/pool/get', function (json) {
             view_stockpool.pools = json;
+            view_stockpool.loading_pool = false;
             if (app.views.param.pool) {
                 var merged = json.base.concat(json.industries).concat(json.custom);
                 for (var key in merged) {
@@ -140,12 +179,12 @@
                     }
                 }
             }
+            if (app.views.param.date) {
+                view_stockpool.date = app.views.param.date;
+            } else {
+                view_stockpool.date = app.index.max_date;
+            }
         });
-        if (app.views.param.date) {
-            view_stockpool.date = app.views.param.date;
-        } else {
-            view_stockpool.date = app.index.max_date;
-        }
     });
 </script>
 

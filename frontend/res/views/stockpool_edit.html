@@ -1,0 +1,143 @@
+<link rel="stylesheet" href="res/styles/stockpool_edit.css">
+
+<div id="view_stockpool_edit" class="fix-width">
+    <div id="view_stockpool_edit_header">
+        <div>
+            <bs-input v-model="name" type="text" placeholder="给股票池起个名字吧~">
+                <span slot="before" class="input-group-addon">
+                    股票池名称
+                </span>
+            </bs-input>
+        </div>
+        <div class="form-inline">
+            <bs-input v-model="filter" type="text" placeholder="筛选股票"></bs-input>
+            <button class="btn btn-primary" v-on:click="shuffleClick">
+                <i class="mdi mdi-shuffle"></i> 手气不错
+            </button>
+            <button class="btn btn-success" v-on:click="saveClick">
+                <i class="mdi mdi-content-save"></i> 保存
+            </button>
+            <button class="btn btn-danger" v-on:click="cancelClick">
+                <i class="mdi mdi-cancel"></i> 取消
+            </button>
+        </div>
+        <spinner ref="spinner" size="xl" fixed text=""></spinner>
+    </div>
+    <div id="view_stockpool_edit_selection">
+        <table>
+            <tr>
+                <checkbox type="primary" v-model="selected[index]" v-for="(stk, index) in stock_index">
+                    {{ code(index) }} {{ stk.name }}
+                </checkbox>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        Vue.component('spinner', VueStrap.spinner);
+        Vue.component('bs-input', VueStrap.input);
+        Vue.component('checkbox', VueStrap.checkbox);
+        var view_selection = new Vue({
+            el: '#view_stockpool_edit_selection',
+            data: {
+                selected: {},
+                stock_index: app.index.stocks
+            },
+            methods: {
+                code: app.utils.formatCode
+            }
+        });
+        var view_header = new Vue({
+            el: '#view_stockpool_edit_header',
+            data: {
+                name: '',
+                filter: ''
+            },
+            watch: {
+                filter: function () {
+                    if (this.filter.length > 0) {
+                        var first = this.filter.charAt(0).toLowerCase();
+                        var filtered = {};
+                        if (first >= '0' && first <= '9') {
+                            var min = Number(this.filter) * Math.pow(10, 6 - this.filter.length);
+                            var max = (Number(this.filter) + 1) * Math.pow(10, 6 - this.filter.length) - 1;
+                            for (var code in app.index.stocks) {
+                                if (code >= min && code <= max) {
+                                    filtered[code] = app.index.stocks[code];
+                                }
+                            }
+                        } else if (first >= 'a' && first <= 'z') {
+                            for (var code in app.index.stocks) {
+                                if (app.index.stocks[code].pinyin.indexOf(this.filter) == 0) {
+                                    filtered[code] = app.index.stocks[code];
+                                }
+                            }
+                        } else {
+                            for (var code in app.index.stocks) {
+                                if (app.index.stocks[code].name.indexOf(this.filter) >= 0) {
+                                    filtered[code] = app.index.stocks[code];
+                                }
+                            }
+                        }
+                        view_selection.stock_index = filtered;
+                    } else {
+                        view_selection.stock_index = app.index.stocks;
+                    }
+                }
+            },
+            methods: {
+                saveClick: function (e) {
+                    if (this.name == '') return;
+                    this.$refs.spinner.show();
+                    var stocks = [];
+                    console.log(view_selection.selected);
+                    for (var code in view_selection.selected) {
+                        if (view_selection.selected[code]) {
+                            stocks.push(Number(code));
+                        }
+                    }
+                    $.post('/api/trade/pool/update', {
+                        id: app.views.param.id,
+                        name: this.name,
+                        stocks: JSON.stringify(stocks)
+                    }).always(function () {
+                        view_header.$refs.spinner.hide();
+                        app.views.load('stockpool', {pool: view_header.name});
+                    });
+                },
+                cancelClick: function (e) {
+                    app.views.load('stockpool');
+                },
+                shuffleClick: function (e) {
+                    var selected = {};
+                    var keys = Object.keys(app.index.stocks);
+                    for (var i = 0; i < 100; i++) {
+                        var j = Math.floor(Math.random() * keys.length);
+                        if (!selected[keys[j]]) {
+                            selected[keys[j]] = true;
+                        } else {
+                            i--;
+                        }
+                    }
+                    view_selection.selected = selected;
+                }
+            }
+        });
+
+        if (app.views.param.id) {
+            view_header.$refs.spinner.show();
+            $.getJSON('/api/trade/pool/getbyid?id=' + app.views.param.id, function (res) {
+                view_header.name = res.name;
+                var selected = {};
+                for (var key in res.stocks) {
+                    selected[res.stocks[key]] = true;
+                }
+                view_selection.selected = selected;
+            }).always(function () {
+                view_header.$refs.spinner.hide();
+            })
+        }
+    });
+</script>

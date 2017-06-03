@@ -8,7 +8,6 @@
     <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vue-strap.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap3-typeahead.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/echarts.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/sha256.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/app.js' %}"></script>
@@ -22,8 +21,8 @@
             <img src="res/images/logo.png">
         </a>
     </div>
-    <div>
-        <input id="searchBox" type="text" placeholder="股票代码/名称/拼音首字母...">
+    <div id="search">
+        <typeahead :data="list" limit="10" placeholder="股票代码/名称/拼音首字母..." :on-hit="onSelect"></typeahead>
     </div>
     <div>
         <ul id="nav">
@@ -39,13 +38,9 @@
                    data-view="stockpool">
                 行情
             </a></li>
-            <li><a href="javascript:" v-bind:class="{ act: selected == 'realtimelist' }" v-on:click="navClick"
-                   data-view="realtimelist">
-                实时行情 (Beta)
-            </a></li>
             <li><a href="javascript:" v-bind:class="{ act: selected == 'strategy' }" v-on:click="navClick"
                    data-view="strategy">
-                我的策略
+                回测
             </a></li>
         </ul>
     </div>
@@ -154,6 +149,19 @@
             }
         });
 
+        Vue.component('typeahead', VueStrap.typeahead);
+        var search_box = new Vue({
+            el: '#search',
+            data: {
+                list: []
+            },
+            methods: {
+                onSelect: function (item) {
+                    app.views.load('stock', {code: Number(item.split(' ')[0])});
+                }
+            }
+        });
+
         Vue.component('modal', VueStrap.modal);
         var user_info = new Vue({
             el: '#userinfo',
@@ -219,6 +227,17 @@
 
         app.loading.show();
         app.index.fetch().always(function () {
+            var src = [];
+            for (var code in app.index.stocks) {
+                src.push(app.utils.formatCode(code) + ' ' + app.index.stocks[code].name + ' ' + app.index.stocks[code].pinyin);
+            }
+            search_box.list = src;
+            $('body').on('keypress', function (e) {
+                if (e.target.nodeName != 'INPUT') {
+                    $('#search input').focus();
+                }
+            });
+
             app.loading.hide();
             var hash = location.hash.substr(1).split('?');
             if (hash[0] != '') {
