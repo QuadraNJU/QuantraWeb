@@ -14,6 +14,7 @@ class StockPool(models.Model):
 class Strategy(models.Model):
     uid = models.IntegerField(null=False)
     name = models.CharField(max_length=50, null=False)
+    description = models.TextField(null=False)
     code = models.TextField(null=False)
     parameters = models.TextField(null=False)
     is_public = models.BooleanField(null=False)

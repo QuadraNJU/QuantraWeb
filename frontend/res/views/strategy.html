@@ -1,35 +1,209 @@
 <link rel="stylesheet" href="res/styles/strategy.css">
+<script src="res/js/ace/ace.js"></script>
+<script src="res/js/ace/ext-language_tools.js"></script>
 
 <div id="view_strategy" class="container-fluid">
     <div class="row">
         <div class="col-md-2 left">
+            <h3>我的策略</h3>
+            <div class="empty" v-if="strategies.length == 0">
+                策略空空如也，<br>是否要新建一个？
+            </div>
             <div class="list">
-                <div>
+                <div v-for="strategy in strategies" v-bind:class="{ act: strategy.id == selected }"
+                     @click="selected = strategy.id">
                     <i class="mdi mdi-file-document"></i>
-                    策略1
-                </div>
-                <div class="act">
-                    <i class="mdi mdi-file-document"></i>
-                    策略2
+                    {{ strategy.name }}
                 </div>
             </div>
+            <button type="button" class="btn btn-success" @click="selected = 0">
+                <i class="mdi mdi-plus"></i> 新建一个策略
+            </button>
         </div>
         <div class="col-md-10 right">
-            <div class = "buttons">
-                <button type="button" class="btn btn-primary" onclick="">
-                    新建
-                </button>
-                <button type="button" class="btn btn-primary" onclick="">
-                    回测
-                </button>
-                <button type="button" class="btn btn-primary" onclick="">
-                    保存
-                </button>
-                <button type="button" class="btn btn-primary" onclick="">
-                    删除
-                </button>
+            <div v-if="selected >= 0">
+                <div class="header">
+                    <div>
+                        <bs-input v-model="detail.name" type="text" placeholder="给策略起个名字吧~">
+                            <span slot="before" class="input-group-addon">
+                                策略名称
+                            </span>
+                        </bs-input>
+                    </div>
+                    <div>
+                        <button-group v-model="int_public" type="info">
+                            <radio :selected-value="1">公开</radio>
+                            <radio :selected-value="0">私有</radio>
+                        </button-group>
+                        <button type="button" class="btn btn-primary">
+                            <i class="mdi mdi-play"></i> 保存并开始回测
+                        </button>
+                        <button type="button" class="btn btn-success" v-on:click="saveStrategy">
+                            <i class="mdi mdi-content-save"></i> 保存策略
+                        </button>
+                        <button type="button" class="btn btn-danger" v-if="selected > 0" @click="confirmDelete = true">
+                            <i class="mdi mdi-delete"></i> 删除策略
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <h4>策略简介</h4>
+                    <bs-input v-model="detail.description" type="textarea"></bs-input>
+                    <h4>参数列表</h4>
+                    <table class="table table-params">
+                        <thead>
+                        <tr>
+                            <th>变量名</th>
+                            <th>默认值</th>
+                            <th>参数描述</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(param, index) in detail.params">
+                            <td><bs-input v-model="param.var" placeholder="变量名"></bs-input></td>
+                            <td><bs-input v-model="param.default" placeholder="默认值"></bs-input></td>
+                            <td><bs-input v-model="param.description" placeholder="参数描述"></bs-input></td>
+                            <td><button class="btn btn-danger" @click="deleteParam(index)"><i class="mdi mdi-delete"></i></button></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <button class="btn btn-success" v-on:click="addParam">
+                        <i class="mdi mdi-plus"></i> 添加参数
+                    </button>
+                    <h4>策略代码</h4>
+                    <div id="code_editor" style="height: 500px;"># Python Code Here</div>
+                </div>
+            </div>
+            <div v-else>
+                你的策略空空如也
             </div>
         </div>
     </div>
+    <modal title="确认" v-model="confirmDelete">
+        确定要删除这个策略吗？
+        <div slot="modal-footer" class="modal-footer">
+            <button type="button" class="btn btn-danger" v-on:click="deleteConfirm">确定删除</button>
+            <button type="button" class="btn btn-default" @click="confirmDelete = false">取消</button>
+        </div>
+    </modal>
 </div>
 
+<script type="text/javascript">
+    (function () {
+        var editor;
+
+        Vue.component('bs-input', VueStrap.input);
+        Vue.component('radio', VueStrap.radio);
+        Vue.component('button-group', VueStrap.buttonGroup);
+        var view_strategy = new Vue({
+            el: '#view_strategy',
+            data: {
+                strategies: [],
+                selected: -1,
+                detail: {},
+                int_public: 1,
+                confirmDelete: false
+            },
+            watch: {
+                selected: function () {
+                    app.views.setParam({id: this.selected});
+                    if (this.selected > 0) {
+                        app.modals.showLoading('正在加载策略详情');
+                        app.requests.get('/api/trade/strategy/getdetail?id=' + this.selected, function (res) {
+                            view_strategy.detail = res.detail;
+                            view_strategy.int_public = res.detail.is_public ? 1 : 0;
+                            view_strategy.detail.params = JSON.parse(res.detail.parameters);
+                        }).always(function () {
+                            app.modals.hideLoading();
+                        });
+                    } else {
+                        view_strategy.detail = {
+                            name: '',
+                            description: '',
+                            code: '# Python code here',
+                            params: [],
+                            is_public: false
+                        };
+                    }
+                },
+                detail: function () {
+                    if (editor) {
+                        editor.setValue(this.detail.code);
+                        editor.gotoLine(1);
+                    }
+                }
+            },
+            updated: function () {
+                ace.require("ace/ext/language_tools");
+                editor = ace.edit('code_editor');
+                editor.getSession().setMode("ace/mode/python");
+                editor.setOptions({
+                    enableBasicAutocompletion: true,
+                    enableSnippets: true,
+                    enableLiveAutocompletion: true
+                });
+            },
+            methods: {
+                addParam: function (e) {
+                    this.detail.params.push({var: '', default: '', description: ''});
+                    this.detail = Object.assign({}, this.detail);
+                },
+                deleteParam: function (index) {
+                    this.detail.params.splice(index, 1);
+                    this.detail = Object.assign({}, this.detail);
+                },
+                saveStrategy: function () {
+                    app.modals.showLoading('正在保存策略');
+                    var params = [];
+                    for (var key in this.detail.params) {
+                        if (this.detail.params[key].var != '') {
+                            params.push(this.detail.params[key]);
+                        }
+                    }
+                    app.requests.post('/api/trade/strategy/update', {
+                        id: this.selected,
+                        name: this.detail.name,
+                        description: this.detail.description,
+                        code: editor.getValue(),
+                        parameters: JSON.stringify(params),
+                        is_public: (this.int_public == 1) ? true : false
+                    }, function (res) {
+                        app.modals.alert('success', '提示', '策略保存成功');
+                        view_strategy.selected = res.id;
+                    }).always(function () {
+                        app.requests.get('/api/trade/strategy/getlist', function (res) {
+                            view_strategy.strategies = res.strategies;
+                        }).always(function () {
+                            app.modals.hideLoading();
+                        });
+                    });
+                },
+                deleteConfirm: function () {
+                    this.confirmDelete = false;
+                    app.modals.showLoading('正在删除策略');
+                    app.requests.get('/api/trade/strategy/delete?id=' + this.selected, function (res) {
+                        app.modals.alert('success', '提示', '策略删除成功');
+                        view_strategy.selected = -1;
+                    }).always(function () {
+                        app.requests.get('/api/trade/strategy/getlist', function (res) {
+                            view_strategy.strategies = res.strategies;
+                        }).always(function () {
+                            app.modals.hideLoading();
+                        });
+                    });
+                }
+            }
+        });
+
+        app.modals.showLoading('正在加载策略列表');
+        app.requests.get('/api/trade/strategy/getlist', function (res) {
+            view_strategy.strategies = res.strategies;
+            if (app.views.param.id) {
+                view_strategy.selected = app.views.param.id;
+            }
+        }).always(function () {
+            app.modals.hideLoading();
+        });
+    })();
+</script>

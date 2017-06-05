@@ -77,11 +77,11 @@
                     var date = view_market.date;
                     if (date != '') {
                         app.views.setParam({date: date});
-                        app.loading.show();
+                        app.modals.showLoading('正在加载市场信息');
                         $.getJSON('/api/stock/market?date=' + date, function (result) {
                             view_market.market = result;
                         }).always(function () {
-                            app.loading.hide();
+                            app.modals.hideLoading();
                         });
                     }
                 }

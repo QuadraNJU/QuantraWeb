@@ -56,11 +56,11 @@
                 }
             }
         });
-        app.loading.show();
+        app.modals.showLoading('正在加载实时行情');
         app.requests.wsConnect('ws/realtime_list');
         app.requests.ws.onmessage = function (msg) {
             view_rtlist.stocks = JSON.parse(msg.data);
-            app.loading.hide();
+            app.modals.hideLoading();
         };
     })();
 </script>

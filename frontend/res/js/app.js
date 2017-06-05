@@ -5,7 +5,7 @@ var app = {
 
     nav: {},
 
-    loading: {},
+    modals: {},
 
     // View loader
 
@@ -29,12 +29,12 @@ var app = {
             window.location.hash = hash;
         },
         load: function (name, param) {
-            app.loading.show();
+            app.modals.showLoading('正在加载页面');
             this.name = name;
             this.setParam(param, true);
             app.nav.selected = name;
             $('#content').load('res/views/' + name + '.html?' + new Date().getTime(), function () {
-                app.loading.hide();
+                app.modals.hideLoading();
             });
         }
     },
@@ -46,6 +46,42 @@ var app = {
                 app.requests.ws.close();
             }
             app.requests.ws = new WebSocket('ws://' + location.host + '/' + path);
+        },
+        get: function (url, cb) {
+            return $.ajax({
+                url: url,
+                timeout: 5000,
+                dataType: 'json',
+                success: function (result, status, xhr) {
+                    if (result.ok) {
+                        cb(result);
+                    } else {
+                        app.modals.alert('danger', '错误', result.msg ? result.msg : '未知错误');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    app.modals.alert('danger', '错误', '无法连接服务器，请稍后重试');
+                }
+            });
+        },
+        post: function (url, data, cb) {
+            return $.ajax({
+                url: url,
+                timeout: 5000,
+                method: 'POST',
+                data: data,
+                dataType: 'json',
+                success: function (result, status, xhr) {
+                    if (result.ok) {
+                        cb(result);
+                    } else {
+                        app.modals.alert('danger', '错误', result.msg ? result.msg : '未知错误');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    app.modals.alert('danger', '错误', '无法连接服务器，请稍后重试');
+                }
+            });
         }
     },
 

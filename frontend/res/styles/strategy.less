@@ -11,6 +11,8 @@
     padding: 0;
 
     .list {
+      padding-top: 10px;
+
       >div {
         height: 30px;
         line-height: 30px;
@@ -21,7 +23,35 @@
         }
       }
     }
+
+    .empty, h3, button {
+      margin-left: 20px;
+    }
+
+    button {
+      margin-top: 10px;
+    }
   }
 
+  .right {
+    .header {
+      margin-top: 10px;
+      display: flex;
+
+      >div:first-child {
+        flex: 1;
+      }
+    }
+
+    .table-params {
+      .form-group {
+        margin: 0;
+      }
+    }
+
+    #code_editor {
+      font-size: 14px;
+    }
+  }
 
 }

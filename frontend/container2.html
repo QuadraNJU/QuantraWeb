@@ -22,7 +22,7 @@
         </a>
     </div>
     <div id="search">
-        <typeahead :data="list" limit="10" placeholder="股票代码/名称/拼音首字母..." :on-hit="onSelect"></typeahead>
+        <typeahead :data="list" :limit="10" placeholder="股票代码/名称/拼音首字母..." :on-hit="onSelect"></typeahead>
     </div>
     <div>
         <ul id="nav">
@@ -113,12 +113,15 @@
         </modal>
     </div>
 </header>
+<div id="modals">
+    <alert v-model="showAlert" placement="top-right" :duration="3000" :type="type" width="300px" dismissable>
+        <strong>{{ title }}</strong>
+        <p>{{ message }}</p>
+    </alert>
+    <spinner v-model="loadingVisible" size="xl" fixed :text="loadingText" style="z-index: 9999;"></spinner>
+</div>
 <div id="container">
-    <div class="loading" v-if="loading > 0">
-        <i class="mdi mdi-loading mdi-spin" style="font-size: 128px;"></i>
-    </div>
-    <div id="content" v-bind:class="{ hidden: loading > 0 }">
-    </div>
+    <div id="content"></div>
 </div>
 
 <script type="text/javascript">
@@ -134,17 +137,41 @@
                 }
             }
         });
-        app.loading = new Vue({
-            el: '#container',
+
+        Vue.component('alert', VueStrap.alert);
+        Vue.component('spinner', VueStrap.spinner);
+        app.modals = new Vue({
+            el: '#modals',
             data: {
-                loading: 0
+                showAlert: false,
+                type: 'success',
+                title: '',
+                message: '',
+                loadingCount: 0,
+                loadingText: ''
+            },
+            computed: {
+                loadingVisible: function () {
+                    return this.loadingCount > 0;
+                }
             },
             methods: {
-                show: function () {
-                    this.loading = 1;
+                alert: function (type, title, msg) {
+                    this.type = type;
+                    this.title = title;
+                    this.message = msg;
+                    this.showAlert = true;
                 },
-                hide: function () {
-                    this.loading = 0;
+                showLoading: function (msg) {
+                    if (msg) {
+                        this.loadingText = msg;
+                    } else {
+                        this.loadingText = 'Loading ...';
+                    }
+                    this.loadingCount++;
+                },
+                hideLoading: function () {
+                    this.loadingCount--;
                 }
             }
         });
@@ -225,7 +252,7 @@
             }
         });
 
-        app.loading.show();
+        app.modals.showLoading('正在初始化');
         app.index.fetch().always(function () {
             var src = [];
             for (var code in app.index.stocks) {
@@ -233,12 +260,12 @@
             }
             search_box.list = src;
             $('body').on('keypress', function (e) {
-                if (e.target.nodeName != 'INPUT') {
+                if (e.target.nodeName != 'INPUT' && e.target.nodeName != 'TEXTAREA') {
                     $('#search input').focus();
                 }
             });
 
-            app.loading.hide();
+            app.modals.hideLoading();
             var hash = location.hash.substr(1).split('?');
             if (hash[0] != '') {
                 var params = {};

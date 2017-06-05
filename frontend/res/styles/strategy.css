@@ -20,9 +20,24 @@
 #view_strategy .left .list > div.act {
   background-color: white;
 }
-
-#view_strategy .right > div {
-  text-align:right;
-  padding-top: 10px;
+#view_strategy .left .empty,
+#view_strategy .left h3,
+#view_strategy .left button {
+  margin-left: 20px;
 }
-
+#view_strategy .left button {
+  margin-top: 10px;
+}
+#view_strategy .right .header {
+  margin-top: 10px;
+  display: flex;
+}
+#view_strategy .right .header > div:first-child {
+  flex: 1;
+}
+#view_strategy .right .table-params .form-group {
+  margin: 0;
+}
+#view_strategy .right #code_editor {
+  font-size: 14px;
+}

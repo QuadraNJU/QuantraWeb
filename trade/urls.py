@@ -8,8 +8,8 @@ urlpatterns = [
     url(r'^pool/update$', stockpool_view.updatePool),
     url(r'^pool/delete$', stockpool_view.deletePoolById),
 
-    url(r'^createStrategy', strategy_view.createStrategy),
-    url(r'^readStrategy', strategy_view.readStrategy),
-    url(r'^updateStrategyById', strategy_view.updateStrategyById),
-    url(r'^deleteStrategyById', strategy_view.deleteStrategyById),
+    url(r'^strategy/getlist$', strategy_view.get_list),
+    url(r'^strategy/getdetail$', strategy_view.get_detail),
+    url(r'^strategy/update$', strategy_view.update),
+    url(r'^strategy/delete$', strategy_view.delete),
 ]
