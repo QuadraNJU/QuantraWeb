@@ -23,6 +23,7 @@ from stock import views as stock_views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', TemplateView.as_view(template_name='container2.html')),
+    url(r'^login$', TemplateView.as_view(template_name='login.html')),
 
     url(r'^api/stock/', include('stock.urls')),
     url(r'^api/user/', include('users.urls')),

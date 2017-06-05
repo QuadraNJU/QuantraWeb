@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/login.css' %}">
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/vue-strap.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/sha256.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/app.js' %}"></script>
+    <title>用户登录</title>
+</head>
+{% verbatim %}
+<body>
+    <div class="box">
+        <img src="res/images/logo.png">
+        <div class="switch">
+            <div>登录</div>
+            <div>注册</div>
+        </div>
+        <div class="form-group">
+            <div>
+                <input class="form-control" type="text" placeholder="用户名">
+            </div>
+            <div>
+                <input class="form-control" type="password" placeholder="密码">
+            </div>
+            <div>
+                <button class="form-control btn btn-success">登录</button>
+            </div>
+        </div>
+    </div>
+</body>
+{% endverbatim %}
+</html>
