@@ -17,7 +17,7 @@ class StockData:
     def get_info(self, code=None, date=None, date_start=None, limit=-1):
         if code is None and date is None:
             return pd.DataFrame()
-        s = select('*').select_from(table('stock_data')).order_by('date desc, code')
+        s = select('*').select_from(table('stock_data')).order_by('code, date desc')
         if code is not None:
             s = s.where(column('code') == code)
         if date is not None:

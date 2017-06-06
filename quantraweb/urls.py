@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 
 from stock import views as stock_views
-
+from trade import backtest_view
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -31,4 +31,5 @@ urlpatterns = [
 
     url(r'^ws/realtime_list', stock_views.realtime_list),
     url(r'^ws/realtime_price', stock_views.realtime_price),
+    url(r'^ws/backtest', backtest_view.backtest),
 ]

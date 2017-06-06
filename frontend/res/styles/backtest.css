@@ -1,0 +1,14 @@
+#view_backtest {
+  margin-top: 20px;
+}
+#view_backtest .header {
+  display: flex;
+  margin-bottom: 20px;
+}
+#view_backtest .header h1 {
+  flex: 1;
+  margin: 0;
+}
+#view_backtest .table .form-group {
+  margin: 0;
+}

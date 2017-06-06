@@ -1,0 +1,14 @@
+#view_stockpool_edit {
+  margin-top: 20px;
+}
+#view_stockpool_edit #view_stockpool_edit_header {
+  display: flex;
+}
+#view_stockpool_edit #view_stockpool_edit_header > div:first-child {
+  flex: 1;
+  margin-right: 50px;
+}
+#view_stockpool_edit #view_stockpool_edit_selection label {
+  display: inline-block;
+  width: 16%;
+}

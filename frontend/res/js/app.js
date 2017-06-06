@@ -53,10 +53,10 @@ var app = {
                 timeout: 5000,
                 dataType: 'json',
                 success: function (result, status, xhr) {
-                    if (result.ok) {
-                        cb(result);
-                    } else {
+                    if (result.ok == false) {
                         app.modals.alert('danger', '错误', result.msg ? result.msg : '未知错误');
+                    } else {
+                        cb(result);
                     }
                 },
                 error: function (xhr, status, error) {
@@ -72,10 +72,10 @@ var app = {
                 data: data,
                 dataType: 'json',
                 success: function (result, status, xhr) {
-                    if (result.ok) {
-                        cb(result);
-                    } else {
+                    if (result.ok == false) {
                         app.modals.alert('danger', '错误', result.msg ? result.msg : '未知错误');
+                    } else {
+                        cb(result);
                     }
                 },
                 error: function (xhr, status, error) {
