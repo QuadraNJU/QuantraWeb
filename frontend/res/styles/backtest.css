@@ -9,6 +9,18 @@
   flex: 1;
   margin: 0;
 }
+#view_backtest .block {
+  margin-left: 30px;
+}
 #view_backtest .table .form-group {
   margin: 0;
+}
+#view_backtest .table .red {
+  color: #db5542;
+}
+#view_backtest .table .green {
+  color: #53b37b;
+}
+#view_backtest .echarts {
+  width: 100%;
 }

@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="res/styles/backtest.css">
+<script type="text/javascript" src="res/js/vue-echarts.js"></script>
 
 <div id="view_backtest" class="fix-width">
     <div class="header">
@@ -10,46 +11,81 @@
         </div>
     </div>
     <div>
-        <h4>基本设置</h4>
-        <div class="form-inline">
-            <i class="mdi mdi-calendar mdi-18px"></i> 日期选择
-            <datepicker v-model="dateStart" format="yyyy-MM-dd" placeholder="起始日期"></datepicker> -
-            <datepicker v-model="dateEnd" format="yyyy-MM-dd" placeholder="结束日期"></datepicker>
-            调仓周期
-            <bs-input v-model="freq"></bs-input>
+        <h4><i class="mdi mdi-settings"></i> 基本设置</h4>
+        <div class="block">
+            <div class="form-inline">
+                <i class="mdi mdi-calendar mdi-18px"></i> 日期选择
+                <datepicker v-model="dateStart" format="yyyy-MM-dd" placeholder="起始日期"></datepicker>
+                -
+                <datepicker v-model="dateEnd" format="yyyy-MM-dd" placeholder="结束日期"></datepicker>
+                调仓周期
+                <bs-input v-model="freq"></bs-input>
+            </div>
+            <div>
+                <i class="mdi mdi-database mdi-18px"></i> 股票池选择
+                <v-select v-model="pools" multiple placeholder="选择一个或多个股票池" search clear-button>
+                    <v-option v-for="(pool, index) in pool_list" v-bind:value="index">{{ pool.name }}</v-option>
+                </v-select>
+            </div>
         </div>
-        <div>
-            <i class="mdi mdi-database mdi-18px"></i> 股票池选择
-            <v-select v-model="pools" multiple placeholder="选择一个或多个股票池" search clear-button>
-                <v-option v-for="(pool, index) in pool_list" v-bind:value="index">{{ pool.name }}</v-option>
-            </v-select>
+        <h4><i class="mdi mdi-code-tags"></i> 策略设置</h4>
+        <div class="block">
+            <table class="table" v-if="strategy.params && strategy.params.length > 0">
+                <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>值</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="param in strategy.params">
+                    <td>{{ param.description }}</td>
+                    <td>
+                        <bs-input v-model="param.value"></bs-input>
+                    </td>
+                    <td style="white-space: nowrap;">
+                        <button class="btn btn-danger" @click="param.value = param.default">
+                            <i class="mdi mdi-undo"></i> 恢复默认值
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div v-else>
+                该策略未提供额外设置项<br><br>
+            </div>
         </div>
-        <h4>策略设置</h4>
-        <table class="table">
-            <thead>
-            <tr>
-                <th>参数</th>
-                <th>值</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="param in strategy.params">
-                <td>{{ param.description }}</td>
-                <td>
-                    <bs-input v-model="param.value"></bs-input>
-                </td>
-                <td style="white-space: nowrap;">
-                    <button class="btn btn-danger" @click="param.value = param.default">
-                        <i class="mdi mdi-undo"></i> 恢复默认值
-                    </button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <h4>回测结果</h4>
-        <div>{{ result.progress }}</div>
+        <div v-if="progress > 0">
+            <div class="progress">
+                <progressbar :now="progress" label type="primary"></progressbar>
+            </div>
+            <h4><i class="mdi mdi-chart-line"></i> 收益率对比</h4>
+            <div class="block">
+                <chart auto-resize :options="chart1" ref="chart1"></chart>
+            </div>
+            <h4><i class="mdi mdi-table-large"></i> 周期收益详情</h4>
+            <table class="table table-striped table-condensed">
+                <thead>
+                <tr>
+                    <th>调仓日期</th>
+                    <th>现金</th>
+                    <th>基准收益率(%)</th>
+                    <th>策略收益率(%)</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="r in results" v-bind:class="{ red: r.earn_rate > r.base_earn_rate, green: r.earn_rate < r.base_earn_rate }">
+                    <td>{{ r.date }}</td>
+                    <td>{{ r.cash }}</td>
+                    <td>{{ percent(r.base_earn_rate) }}</td>
+                    <td>{{ percent(r.earn_rate) }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
+    <spinner v-model="loading" size="xl" fixed text="正在启动回测" style="z-index: 9999;"></spinner>
 </div>
 
 <script type="text/javascript">
@@ -58,6 +94,12 @@
         Vue.component('v-select', VueStrap.select);
         Vue.component('v-option', VueStrap.option);
         Vue.component('bs-input', VueStrap.input);
+        Vue.component('progressbar', VueStrap.progressbar);
+        Vue.component('spinner', VueStrap.spinner);
+        Vue.component('chart', VueECharts);
+
+        var date = new Date(app.index.max_date);
+        date.setMonth(date.getMonth() - 6);
         var view_backtest = new Vue({
             el: '#view_backtest',
             data: {
@@ -65,15 +107,49 @@
                 strategy: {},
                 pool_list: [],
                 pools: [],
-                dateStart: app.index.max_date,
+                dateStart: date.toISOString().slice(0, 10),
                 dateEnd: app.index.max_date,
-                result: {}
+                progress: -1,
+                results: [],
+
+                chart1: {
+                    animation: false,
+                    legend: {
+                        data: ['策略收益率', '基准收益率']
+                    },
+                    xAxis: {
+                        type: 'time'
+                    },
+                    yAxis: {
+                        scale: true
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross'
+                        }
+                    },
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            saveAsImage: {}
+                        }
+                    }
+                }
+            },
+            computed: {
+                loading: function () {
+                    return this.progress === 0;
+                }
             },
             methods: {
+                percent: app.utils.formatPercent,
                 beginBacktest: function () {
                     var ws = new WebSocket('ws://127.0.0.1:8000/ws/backtest?id=' + this.strategy.id);
                     var _this = this;
+                    _this.results = [];
                     ws.onopen = function () {
+                        _this.progress = 0;
                         var universe = [], params = {};
                         for (var key in _this.pools) {
                             universe = universe.concat(_this.pool_list[_this.pools[key]].stocks);
@@ -90,8 +166,39 @@
                             universe: universe
                         }));
                     };
+
+                    var earn = [], base = [];
                     ws.onmessage = function (msg) {
-                        console.log(msg.data);
+                        var out = JSON.parse(msg.data);
+                        console.log(out);
+                        if (out.success) {
+                            _this.progress = 100;
+                        } else if (out.error) {
+                            _this.progress = -1;
+                            ws.close();
+                            app.modals.alert('danger', '回测错误', out.msg);
+                        } else {
+                            _this.progress = out.progress;
+                            _this.results.push(out);
+                            earn.push([out.date, out.earn_rate]);
+                            base.push([out.date, out.base_earn_rate]);
+                            _this.$refs.chart1 && _this.$refs.chart1.mergeOptions({
+                                series: [
+                                    {
+                                        type: 'line',
+                                        name: '策略收益率',
+                                        showSymbol: false,
+                                        data: earn
+                                    },
+                                    {
+                                        type: 'line',
+                                        name: '基准收益率',
+                                        showSymbol: false,
+                                        data: base
+                                    }
+                                ]
+                            });
+                        }
                     };
                 }
             }

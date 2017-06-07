@@ -5,7 +5,7 @@
 <div id="view_strategy" class="container-fluid">
     <div class="row">
         <div class="col-md-2 left">
-            <h3>我的策略</h3>
+            <h3><i class="mdi mdi-format-list-bulleted-type"></i> 我的策略</h3>
             <div class="empty" v-if="strategies.length == 0">
                 策略空空如也，<br>是否要新建一个？
             </div>
@@ -26,16 +26,16 @@
                     <div>
                         <bs-input v-model="detail.name" type="text" placeholder="给策略起个名字吧~">
                             <span slot="before" class="input-group-addon">
-                                策略名称
+                                <i class="mdi mdi-rename-box"></i> 策略名称
                             </span>
                         </bs-input>
                     </div>
                     <div>
                         <button-group v-model="int_public" type="info">
-                            <radio :selected-value="1">公开</radio>
-                            <radio :selected-value="0">私有</radio>
+                            <radio :selected-value="1"><i class="mdi mdi-share-variant"></i> 公开</radio>
+                            <radio :selected-value="0"><i class="mdi mdi-lock"></i> 私有</radio>
                         </button-group>
-                        <button type="button" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary" v-on:click="saveToBacktest">
                             <i class="mdi mdi-play"></i> 保存并开始回测
                         </button>
                         <button type="button" class="btn btn-success" v-on:click="saveStrategy">
@@ -47,9 +47,9 @@
                     </div>
                 </div>
                 <div>
-                    <h4>策略简介</h4>
+                    <h4><i class="mdi mdi-script"></i> 策略简介</h4>
                     <bs-input v-model="detail.description" type="textarea"></bs-input>
-                    <h4>参数列表</h4>
+                    <h4><i class="mdi mdi-code-tags"></i> 参数列表</h4>
                     <table class="table table-params">
                         <thead>
                         <tr>
@@ -71,7 +71,7 @@
                     <button class="btn btn-success" v-on:click="addParam">
                         <i class="mdi mdi-plus"></i> 添加参数
                     </button>
-                    <h4>策略代码</h4>
+                    <h4><i class="mdi mdi-language-python"></i> 策略代码</h4>
                     <div id="code_editor" style="height: 500px;"># Python Code Here</div>
                 </div>
             </div>
@@ -161,7 +161,7 @@
                             params.push(this.detail.params[key]);
                         }
                     }
-                    app.requests.post('/api/trade/strategy/update', {
+                    return app.requests.post('/api/trade/strategy/update', {
                         id: this.selected,
                         name: this.detail.name,
                         description: this.detail.description,
@@ -177,6 +177,11 @@
                         }).always(function () {
                             app.modals.hideLoading();
                         });
+                    });
+                },
+                saveToBacktest: function () {
+                    this.saveStrategy().always(function () {
+                        app.views.load('backtest', {id: view_strategy.selected});
                     });
                 },
                 deleteConfirm: function () {

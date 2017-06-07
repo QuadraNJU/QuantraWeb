@@ -1,7 +1,6 @@
 # coding=utf-8
 import imp
 import json
-import time
 from datetime import datetime
 
 import numpy
@@ -57,8 +56,11 @@ class Account:
             return None
         result = {}
         for index, _info in self.stocks.iterrows():
-            if stock_data.loc[index + days - 1]['code'] == _info['code']:
-                result[_info['code']] = stock_data[attr][index:index + days].tolist()
+            try:
+                if stock_data.loc[index + days - 1]['code'] == _info['code']:
+                    result[_info['code']] = stock_data[attr][index:index + days].tolist()
+            except:
+                result[_info['code']] = []
         return result
 
     def trade(self, stock, target):
@@ -83,6 +85,9 @@ def run(args, ws):
     universe = args['universe']
     frequency = int(args['frequency'])
     capital = 100000000
+    if len(universe) == 0:
+        ws.send(json.dumps({'error': True, 'msg': '未选中任何股票，请重新选择'}))
+        return
     # load data
     global stock_data
     stock_data = StockData().get_info(date=end_date, date_start=start_date).reset_index()
