@@ -18,3 +18,10 @@ class Strategy(models.Model):
     code = models.TextField(null=False)
     parameters = models.TextField(null=False)
     is_public = models.BooleanField(null=False)
+
+
+class BacktestResult(models.Model):
+    uid = models.IntegerField(null=False)
+    time = models.DateTimeField(null=False)
+    parameter = models.TextField(null=False)
+    result = models.TextField(null=False)
