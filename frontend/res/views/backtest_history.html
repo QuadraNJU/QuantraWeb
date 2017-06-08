@@ -1,0 +1,56 @@
+<link rel="stylesheet" href="res/styles/backtest_history.css">
+
+<div id="view_backtest_history" class="fix-width">
+    <div class="header">
+        <h1><i class="mdi mdi-history"></i> 回测历史记录</h1>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <table class="table table-hover table-striped">
+                <thead>
+                <tr>
+                    <th>回测时间</th>
+                    <th>策略名称</th>
+                    <th>调仓周期</th>
+                    <th>基准收益率</th>
+                    <th>策略收益率</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="his in histories" v-bind:class="{ red: his.base_annualized < his.annualized, green: his.base_annualized > his.annualized }"
+                    v-bind:data-id="his.id" v-on:click="rowClick">
+                    <td>{{ his.time }}</td>
+                    <td>{{ his.strategy_name }}</td>
+                    <td>{{ his.freq }}</td>
+                    <td>{{ percent(his.base_annualized) }}</td>
+                    <td>{{ percent(his.annualized) }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    (function () {
+        var view_backtest_history = new Vue({
+            el: '#view_backtest_history',
+            data: {
+                histories: []
+            },
+            methods: {
+                percent: app.utils.formatPercent,
+                rowClick: function (e) {
+                    app.views.load('backtest', {history: e.currentTarget.dataset.id});
+                }
+            }
+        });
+
+        app.modals.showLoading('正在加载回测历史');
+        app.requests.get('/api/trade/backtest/gethistorylist', function (res) {
+            view_backtest_history.histories = res.histories;
+        }).always(function () {
+            app.modals.hideLoading();
+        });
+    })();
+</script>

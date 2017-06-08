@@ -117,6 +117,7 @@ def run(args, ws):
     daily_earn_rate = []
     base_earn_rate = []
     drawdown = []
+    infos = []
     win_times = 0
     history_max_value = 0
     for i in range(start_date_index, end_date_index, -frequency):
@@ -146,6 +147,7 @@ def run(args, ws):
         progress = int((start_date_index - i) * 100.0 / (start_date_index - end_date_index))
         info = {'progress': progress, 'date': trade_days[i].strftime('%Y-%m-%d'), 'cash': account.cash,
                 'earn_rate': earn_rate, 'base_earn_rate': today_base_earn_rate}
+        infos.append(info)
         ws.send(json.dumps(info))
 
     annualized = daily_earn_rate[-1] / (start_date_index - end_date_index + 1) * 250
@@ -159,3 +161,5 @@ def run(args, ws):
     result = {'success': True, 'annualized': annualized, 'max_drawdown': max_drawdown,
               'base_annualized': base_annualized, 'win_rate': win_rate, 'sharp': sharp, 'beta': beta, 'alpha': alpha}
     ws.send(json.dumps(result))
+
+    return {'infos': infos, 'result': result}

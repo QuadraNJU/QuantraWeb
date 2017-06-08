@@ -26,7 +26,8 @@ var app = {
             } else {
                 this.param = {};
             }
-            window.location.hash = hash;
+            window.history.pushState(null, null, '#' + hash);
+            //window.location.hash = hash;
         },
         load: function (name, param) {
             app.modals.showLoading('正在加载页面');

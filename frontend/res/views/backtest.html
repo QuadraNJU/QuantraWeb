@@ -2,15 +2,15 @@
 <script type="text/javascript" src="res/js/vue-echarts.js"></script>
 
 <div id="view_backtest" class="fix-width">
-    <div class="header">
-        <h1>{{ strategy.name }}</h1>
-        <div>
-            <button class="btn btn-primary" v-on:click="beginBacktest">
-                <i class="mdi mdi-play"></i> 开始回测
-            </button>
+    <div v-if="strategy.id">
+        <div class="header">
+            <h1>{{ strategy.name }}</h1>
+            <div>
+                <button class="btn btn-primary" v-on:click="beginBacktest">
+                    <i class="mdi mdi-play"></i> 开始回测
+                </button>
+            </div>
         </div>
-    </div>
-    <div>
         <h4><i class="mdi mdi-settings"></i> 基本设置</h4>
         <div class="block">
             <div class="form-inline">
@@ -56,6 +56,8 @@
                 该策略未提供额外设置项<br><br>
             </div>
         </div>
+    </div>
+    <div>
         <div v-if="progress > 0">
             <div class="progress">
                 <progressbar :now="progress" label type="primary"></progressbar>
@@ -139,6 +141,9 @@
             },
             computed: {
                 loading: function () {
+                    if (!this.progress === 0) {
+                        setTimeout(function () { $('body').css('overflow-y', ''); }, 0);
+                    }
                     return this.progress === 0;
                 }
             },
@@ -167,7 +172,6 @@
                         }));
                     };
 
-                    var earn = [], base = [];
                     ws.onmessage = function (msg) {
                         var out = JSON.parse(msg.data);
                         console.log(out);
@@ -180,29 +184,49 @@
                         } else {
                             _this.progress = out.progress;
                             _this.results.push(out);
-                            earn.push([out.date, out.earn_rate]);
-                            base.push([out.date, out.base_earn_rate]);
-                            _this.$refs.chart1 && _this.$refs.chart1.mergeOptions({
-                                series: [
-                                    {
-                                        type: 'line',
-                                        name: '策略收益率',
-                                        showSymbol: false,
-                                        data: earn
-                                    },
-                                    {
-                                        type: 'line',
-                                        name: '基准收益率',
-                                        showSymbol: false,
-                                        data: base
-                                    }
-                                ]
-                            });
+                            update_infos(_this.results);
                         }
                     };
                 }
             }
         });
+
+        var update_infos = function (infos) {
+            var earn = [], base = [];
+            for (var key in infos) {
+                earn.push([infos[key].date, infos[key].earn_rate]);
+                base.push([infos[key].date, infos[key].base_earn_rate]);
+            }
+            view_backtest.$refs.chart1 && view_backtest.$refs.chart1.mergeOptions({
+                series: [
+                    {
+                        type: 'line',
+                        name: '策略收益率',
+                        showSymbol: false,
+                        data: earn
+                    },
+                    {
+                        type: 'line',
+                        name: '基准收益率',
+                        showSymbol: false,
+                        data: base
+                    }
+                ]
+            });
+        };
+
+        var load_strategy = function (id) {
+            app.modals.showLoading('正在加载策略');
+            return app.requests.get('/api/trade/strategy/getdetail?id=' + id, function (res) {
+                res.detail.params = JSON.parse(res.detail.parameters);
+                for (var key in res.detail.params) {
+                    res.detail.params[key].value = res.detail.params[key].default;
+                }
+                view_backtest.strategy = res.detail;
+            }).always(function () {
+                app.modals.hideLoading();
+            });
+        };
 
         app.modals.showLoading('正在加载股票池');
         app.requests.get('/api/trade/pool/get', function (res) {
@@ -221,17 +245,30 @@
             app.modals.hideLoading();
         });
 
-        if (app.views.param.id) {
-            app.modals.showLoading('正在加载策略');
-            app.requests.get('/api/trade/strategy/getdetail?id=' + app.views.param.id, function (res) {
-                res.detail.params = JSON.parse(res.detail.parameters);
-                for (var key in res.detail.params) {
-                    res.detail.params[key].value = res.detail.params[key].default;
-                }
-                view_backtest.strategy = res.detail;
+        if (app.views.param.history) {
+            app.modals.showLoading('正在加载回测历史');
+            app.requests.get('/api/trade/backtest/gethistory?id=' + app.views.param.history, function (res) {
+                var result = JSON.parse(res.history.result);
+                var param = JSON.parse(res.history.parameter);
+                view_backtest.progress = 100;
+                view_backtest.results = result.infos;
+                setTimeout(function () { update_infos(result.infos); }, 0);
+                view_backtest.dateStart = param.start_date;
+                view_backtest.dateEnd = param.end_date;
+                view_backtest.freq = param.frequency;
+                load_strategy(res.history.strategy).always(function () {
+                    for (var key in view_backtest.strategy.params) {
+                        var p = view_backtest.strategy.params[key];
+                        if (param.params[p.var]) {
+                            p.value = param.params[p.var];
+                        }
+                    }
+                });
             }).always(function () {
                 app.modals.hideLoading();
             });
+        } else if (app.views.param.id) {
+            load_strategy(app.views.param.id);
         }
     });
 </script>

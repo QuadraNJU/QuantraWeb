@@ -13,6 +13,7 @@ class StockPool(models.Model):
 
 class Strategy(models.Model):
     uid = models.IntegerField(null=False)
+    time = models.DateTimeField(null=False)
     name = models.CharField(max_length=50, null=False)
     description = models.TextField(null=False)
     code = models.TextField(null=False)
@@ -23,5 +24,6 @@ class Strategy(models.Model):
 class BacktestResult(models.Model):
     uid = models.IntegerField(null=False)
     time = models.DateTimeField(null=False)
+    strategy = models.IntegerField(null=False)
     parameter = models.TextField(null=False)
     result = models.TextField(null=False)

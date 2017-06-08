@@ -1,0 +1,46 @@
+<link rel="stylesheet" href="res/styles/strategy_market.css">
+
+<div id="view_strategy_market" class="fix-width">
+    <div class="header">
+        <h1><i class="mdi mdi-shopping"></i> 策略市场</h1>
+    </div>
+    <div class="row">
+        <div class="item" v-for="s in strategies">
+            <div class="name">{{ s.name }}</div>
+            <div class="user"><i class="mdi mdi-account"></i> 由 {{ s.user }} 公开</div>
+            <div class="time"><i class="mdi mdi-timer"></i> 最后更新于 {{ s.time }}</div>
+            <div class="description"><i class="mdi mdi-format-quote-open"></i> {{ s.description }}</div>
+            <button class="btn btn-primary" v-on:click="clone" v-bind:data-id="s.id">
+                <i class="mdi mdi-plus"></i> 添加到我的策略
+            </button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    (function () {
+        var view_strategy_market = new Vue({
+            el: '#view_strategy_market',
+            data: {
+                strategies: []
+            },
+            methods: {
+                clone: function (e) {
+                    app.modals.showLoading('正在添加策略');
+                    app.requests.get('/api/trade/strategy/clone?id=' + e.target.dataset.id, function (res) {
+                        app.views.load('strategy', {id: res.id});
+                    }).always(function () {
+                        app.modals.hideLoading();
+                    });
+                }
+            }
+        });
+
+        app.modals.showLoading('正在加载策略市场');
+        app.requests.get('/api/trade/strategy/getpublic', function (res) {
+            view_strategy_market.strategies = res.strategies;
+        }).always(function () {
+            app.modals.hideLoading();
+        });
+    })();
+</script>

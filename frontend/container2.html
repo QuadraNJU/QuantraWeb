@@ -264,22 +264,26 @@
                     $('#search input').focus();
                 }
             });
-
             app.modals.hideLoading();
-            var hash = location.hash.substr(1).split('?');
-            if (hash[0] != '') {
-                var params = {};
-                if (hash.length > 1) {
-                    query = hash[1].split('&');
-                    for (var i = query.length; i > 0;) {
-                        var pair = query[--i].split('=');
-                        params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+
+            var loadPage = function () {
+                var hash = location.hash.substr(1).split('?');
+                if (hash[0] != '') {
+                    var params = {};
+                    if (hash.length > 1) {
+                        query = hash[1].split('&');
+                        for (var i = query.length; i > 0;) {
+                            var pair = query[--i].split('=');
+                            params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+                        }
                     }
+                    app.views.load(hash[0], params);
+                } else {
+                    app.views.load('home');
                 }
-                app.views.load(hash[0], params);
-            } else {
-                app.views.load('home');
-            }
+            };
+            window.onpopstate = loadPage;
+            loadPage();
         });
     })();
 </script>

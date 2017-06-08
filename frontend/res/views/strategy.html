@@ -4,7 +4,7 @@
 
 <div id="view_strategy" class="container-fluid">
     <div class="row">
-        <div class="col-md-2 left">
+        <div class="col-md-3 col-lg-2 left">
             <h3><i class="mdi mdi-format-list-bulleted-type"></i> 我的策略</h3>
             <div class="empty" v-if="strategies.length == 0">
                 策略空空如也，<br>是否要新建一个？
@@ -18,9 +18,12 @@
             </div>
             <button type="button" class="btn btn-success" @click="selected = 0">
                 <i class="mdi mdi-plus"></i> 新建一个策略
+            </button><br>
+            <button type="button" class="btn btn-info" v-on:click="historyClick">
+                <i class="mdi mdi-history"></i> 回测历史记录
             </button>
         </div>
-        <div class="col-md-10 right">
+        <div class="col-md-9 col-lg-10 right">
             <div v-if="selected >= 0">
                 <div class="header">
                     <div>
@@ -76,7 +79,6 @@
                 </div>
             </div>
             <div v-else>
-                你的策略空空如也
             </div>
         </div>
     </div>
@@ -145,6 +147,9 @@
                 });
             },
             methods: {
+                historyClick: function () {
+                    app.views.load('backtest_history', {});
+                },
                 addParam: function (e) {
                     this.detail.params.push({var: '', default: '', description: ''});
                     this.detail = Object.assign({}, this.detail);
