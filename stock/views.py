@@ -107,6 +107,7 @@ def stock_predict(request):
 
     model = keras.models.load_model('model.h5')
     predict_list, real_list = predict_util.data_predict(infos, model)
+    keras.backend.clear_session()
     predict_list = [(i + 1) * window for i in predict_list]
     real_list = [(i + 1) * window for i in real_list]
 
