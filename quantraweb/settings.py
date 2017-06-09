@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'stock',
     'users',
     'trade',
+    'forum',
 ]
 
 MIDDLEWARE = [

@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^api/stock/', include('stock.urls')),
     url(r'^api/user/', include('users.urls')),
     url(r'^api/trade/', include('trade.urls')),
+    url(r'^api/forum/', include('forum.urls')),
 
     url(r'^ws/realtime_list', stock_views.realtime_list),
     url(r'^ws/realtime_price', stock_views.realtime_price),
