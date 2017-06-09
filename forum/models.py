@@ -9,5 +9,5 @@ class Thread(models.Model):
     uid = models.IntegerField(null=False)
     time = models.DateTimeField(null=False)
     content = models.TextField(null=False)
-    tag = models.CharField(null=False, max_length=50)
+    tag = models.CharField(null=False, max_length=50, default='')
     reply = models.IntegerField(null=False, default=0)
