@@ -6,8 +6,15 @@ from datetime import datetime
 from django.http import JsonResponse
 
 from forum.models import Thread
-# Create your views here.
 from users.models import User
+
+
+def __get_username(uid):
+    user = User.objects.filter(id=uid)
+    if user:
+        return user[0].username
+    else:
+        return '无名用户'
 
 
 def get_list(request):
@@ -18,18 +25,36 @@ def get_list(request):
         if thread.reply > 0 and thread.reply not in thread_times:
             thread_times[thread.reply] = thread.time
         if thread.reply == 0:
-            user = User.objects.filter(id=thread.uid)
-            if user:
-                username = user[0].username
-            else:
-                username = '无名用户'
             if thread.id in thread_times:
                 last_reply = thread_times[thread.id]
             else:
                 last_reply = thread.time
-            threads.append({'id': thread.id, 'time': thread.time, 'last_reply': last_reply,
-                            'username': username, 'title': thread.title, 'tag': thread.tag})
+            threads.append({'id': thread.id, 'time': thread.time.strftime('%Y/%m/%d %H:%M:%S'),
+                            'last_reply': last_reply.strftime('%Y/%m/%d %H:%M:%S'),
+                            'username': __get_username(thread.uid), 'title': thread.title, 'tag': thread.tag})
     return JsonResponse({'ok': True, 'threads': threads})
+
+
+def get_thread(request):
+    _id = request.GET.get('id', 0)
+    thread = Thread.objects.filter(id=_id)
+    if thread:
+        thread = thread[0]
+        replies = []
+        for reply in Thread.objects.filter(reply=_id).order_by('time'):
+            replies.append({
+                'username': __get_username(reply.uid),
+                'time': reply.time.strftime('%Y/%m/%d %H:%M:%S'),
+                'content': reply.content
+            })
+        return JsonResponse({'ok': True, 'thread': {
+            'username': __get_username(thread.uid),
+            'title': thread.title, 'tag': thread.tag, 'content': thread.content,
+            'time': thread.time.strftime('%Y/%m/%d %H:%M:%S'),
+            'last_reply': replies[-1]['time'] if len(replies) > 0 else thread.time.strftime('%Y/%m/%d %H:%M:%S'),
+        }, 'replies': replies})
+    else:
+        return JsonResponse({'ok': False, 'msg': '帖子不存在'})
 
 
 def new_thread(request):
