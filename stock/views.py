@@ -5,7 +5,8 @@ import json
 import time
 from datetime import datetime, timedelta
 
-from django.http import HttpResponse
+import keras
+from django.http import HttpResponse, JsonResponse
 
 from dwebsocket import accept_websocket
 from stock.data import qtshare
@@ -13,6 +14,9 @@ from stock.data.stock_data import StockData
 
 
 # Create your views here.
+from stock.lstm_util import predict_util
+
+
 def get_index(request):
     index = StockData().get_index()
     min_date, max_date = StockData().get_date_range()
@@ -93,6 +97,34 @@ def stock(request):
         result['data'].append((row['open'], row['close'], row['low'], row['high']))
         result['volume'].append(row['volume'])
     return HttpResponse(json.dumps(result))
+
+
+def stock_predict(request):
+    predict_correct = 0
+    code = int(request.GET['code'])
+    infos = list(StockData().get_info(code=code, limit=100)['close'])
+    window = infos[0]
+
+    model = keras.models.load_model('model.h5')
+    predict_list, real_list = predict_util.data_predict(infos, model)
+    predict_list = [(i + 1) * window for i in predict_list]
+    real_list = [(i + 1) * window for i in real_list]
+
+    for i in range(len(predict_list) - 1):
+        if predict_list[i+1] - predict_list[i] < 0 and real_list[i+1] - real_list[i] < 0:
+            predict_correct += 1
+        elif predict_list[i+1] - predict_list[i] > 0 and real_list[i+1] - real_list[i] > 0:
+            predict_correct += 1
+
+    return JsonResponse({'result': float(predict_correct) / len(predict_list)})
+
+
+def build_model(request):
+    date_start, date_end = StockData().get_date_range()
+    train_data = list(StockData().get_info(code=1)['close'])
+    model = predict_util.build_model(train_data)
+    model.save('model.h5')
+    return JsonResponse({'ok': True})
 
 
 @accept_websocket

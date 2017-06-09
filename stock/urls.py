@@ -7,4 +7,6 @@ urlpatterns = [
     url(r'^market', views.market),
     url(r'^stock_list', views.stock_list),
     url(r'^stock', views.stock),
+    url(r'^predict', views.stock_predict),
+    url(r'^bulidmodel', views.build_model),
 ]

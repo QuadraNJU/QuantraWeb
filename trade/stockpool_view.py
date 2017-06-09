@@ -40,7 +40,7 @@ def readPool(request):
             {'name': '中小板', 'stocks': stock_index[(stock_index.index >= 2000) & (stock_index.index < 3000)].index.values.tolist()},
             {'name': '创业板', 'stocks': stock_index[stock_index.index >= 300000].index.values.tolist()},
         ],
-        'industries': [{'id': int(id), 'name': row['name'], 'stocks': json.loads(row['stocks'])} for id, row in StockData().get_industries().iterrows()],
+        'industries': [{'name': row['name'], 'stocks': json.loads(row['stocks'])} for id, row in StockData().get_industries().iterrows()],
         'custom': []
     }
     if 'uid' in request.session:
