@@ -26,7 +26,7 @@ var app = {
             } else {
                 this.param = {};
             }
-            window.history.pushState(null, null, '#' + hash);
+            window.history.replaceState(null, null, '#' + hash);
             //window.location.hash = hash;
         },
         load: function (name, param) {
@@ -35,6 +35,7 @@ var app = {
             this.setParam(param, true);
             app.nav.selected = name;
             $('#content').load('res/views/' + name + '.html?' + new Date().getTime(), function () {
+                app.requests.wsClose();
                 app.modals.hideLoading();
             });
         }
@@ -43,10 +44,13 @@ var app = {
     requests: {
         ws: null,
         wsConnect: function (path) {
+            this.wsClose();
+            app.requests.ws = new WebSocket('ws://' + location.host + '/' + path);
+        },
+        wsClose: function () {
             if (app.requests.ws != null) {
                 app.requests.ws.close();
             }
-            app.requests.ws = new WebSocket('ws://' + location.host + '/' + path);
         },
         get: function (url, cb) {
             return $.ajax({
@@ -57,7 +61,7 @@ var app = {
                     if (result.ok == false) {
                         app.modals.alert('danger', '错误', result.msg ? result.msg : '未知错误');
                     } else {
-                        cb(result);
+                        cb && cb(result);
                     }
                 },
                 error: function (xhr, status, error) {
@@ -76,7 +80,7 @@ var app = {
                     if (result.ok == false) {
                         app.modals.alert('danger', '错误', result.msg ? result.msg : '未知错误');
                     } else {
-                        cb(result);
+                        cb && cb(result);
                     }
                 },
                 error: function (xhr, status, error) {
@@ -107,30 +111,6 @@ var app = {
 
         formatPercent: function (pct) {
             return Math.round(pct * 10000) / 100 + '%';
-        },
-
-        ma: function (arr) {
-            return arr.reduce(function (a, b) {
-                    return a + b;
-                }) / arr.length;
-        },
-
-        ema: function (arr) {
-            var alpha = 2 / (arr.length + 1), sum = 0;
-            for (var i = 0; i < arr.length; i++) {
-                sum += Math.pow(alpha, i) * arr[i];
-            }
-            return alpha * sum;
-        },
-
-        std: function (arr) {
-            var mean = this.ma(arr);
-            return Math.sqrt(arr.map(function (a) {
-                    return Math.pow(a - mean, 2)
-                })
-                    .reduce(function (a, b) {
-                        return a + b;
-                    }) / arr.length);
         }
     }
 };

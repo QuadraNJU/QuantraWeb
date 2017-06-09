@@ -1,57 +1,54 @@
 #view_stock {
-  height: 100%;
-  padding-top: 20px;
+  margin-top: 20px;
 
-  .row {
-    height: 100%;
+  .hori {
+    display: flex;
+    align-items: baseline;
 
-    .stock_chart {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      padding-bottom: 10px;
-
-      >div:first-child {
-        flex: 1;
-      }
-
-      >div:last-child {
-        padding-left: 5%;
-
-        span {
-          padding: 0 10px;
-        }
-
-        span.act {
-          font-weight: bold;
-        }
-      }
+    .name {
+      flex: 1;
+      font-size: 32px;
+      color: #0055a2;
     }
 
-    #stock_info {
-      .name {
-        font-size: 36px;
-      }
-
-      .price {
-        font-size: 48px;
-      }
-
-      .code, .rate {
-        font-size: 24px;
-      }
-
-      .red {
-        color: #db5542;
-      }
-
-      .green {
-        color: #53b37b;
-      }
+    .price {
+      font-size: 28px;
     }
 
-    table {
-      margin-top: 10px;
+    .red {
+      color: #db5542;
+    }
+
+    .green {
+      color: #53b37b;
+    }
+
+    .prices {
+      font-size: 18px;
+      margin-left: 20px;
+    }
+  }
+
+  .rtdata {
+    >div {
+      flex: 1;
+      font-size: 16px;
+    }
+  }
+
+  .echarts {
+    width: 100%;
+  }
+
+  .chart_select {
+    padding-left: 30px;
+
+    span {
+      padding: 0 10px;
+    }
+
+    span.act {
+      font-weight: bold;
     }
   }
 }

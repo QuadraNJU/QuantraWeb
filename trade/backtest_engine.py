@@ -1,7 +1,7 @@
 # coding=utf-8
 import imp
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import numpy
 
@@ -47,7 +47,7 @@ class Account:
         for index, info in self.stocks.iterrows():
             self.ref_price[info['code']] = info['open']  # 今日开盘价
             self.close_price[info['code']] = info['close']  # 今日收盘价
-        for stk in self.sec_pos.keys():
+        for stk in list(self.sec_pos.keys()):
             if self.sec_pos[stk] <= 0:
                 del self.sec_pos[stk]
 
@@ -90,7 +90,8 @@ def run(args, ws):
         return
     # load data
     global stock_data
-    stock_data = StockData().get_info(date=end_date, date_start=start_date).reset_index()
+    stock_data = StockData().get_info(date=end_date,
+                                      date_start=get_date(start_date) - timedelta(days=90)).reset_index()
     global trade_days
     trade_days = stock_data['date'].drop_duplicates().tolist()
 
@@ -111,7 +112,7 @@ def run(args, ws):
 
     # init strategy and account
     handler = imp.new_module('handler')
-    exec args['code'] in handler.__dict__
+    exec(args['code'], handler.__dict__)
     account = Account(args['params'], universe, capital)
 
     daily_earn_rate = []
@@ -135,8 +136,8 @@ def run(args, ws):
         daily_earn_rate.append(earn_rate)
         # base earning rate
         if i == start_date_index:
-            base_stock_price = numpy.mean(account.ref_price.values())
-        today_base_earn_rate = (numpy.mean(account.close_price.values()) - base_stock_price) / base_stock_price
+            base_stock_price = numpy.mean(list(account.ref_price.values()))
+        today_base_earn_rate = (numpy.mean(list(account.close_price.values())) - base_stock_price) / base_stock_price
         base_earn_rate.append(today_base_earn_rate)
         # update win times
         if earn_rate > today_base_earn_rate:

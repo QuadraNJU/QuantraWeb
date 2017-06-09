@@ -1,0 +1,22 @@
+#view_strategy_market .item {
+  display: inline-block;
+  background-color: #fff2b5;
+  margin: 10px 15px;
+  padding: 10px 20px;
+  width: 350px;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+}
+#view_strategy_market .item .name {
+  font-size: 32px;
+}
+#view_strategy_market .item .user,
+#view_strategy_market .item .time {
+  font-size: 14px;
+  color: dimgray;
+}
+#view_strategy_market .item .description {
+  font-size: 16px;
+}
+#view_strategy_market .item button {
+  margin: 5px 10px;
+}

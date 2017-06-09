@@ -1,44 +1,41 @@
 #view_stock {
-  height: 100%;
-  padding-top: 20px;
+  margin-top: 20px;
 }
-#view_stock .row {
-  height: 100%;
-}
-#view_stock .row .stock_chart {
-  height: 100%;
+#view_stock .hori {
   display: flex;
-  flex-direction: column;
-  padding-bottom: 10px;
+  align-items: baseline;
 }
-#view_stock .row .stock_chart > div:first-child {
+#view_stock .hori .name {
   flex: 1;
+  font-size: 32px;
+  color: #0055a2;
 }
-#view_stock .row .stock_chart > div:last-child {
-  padding-left: 5%;
+#view_stock .hori .price {
+  font-size: 28px;
 }
-#view_stock .row .stock_chart > div:last-child span {
-  padding: 0 10px;
-}
-#view_stock .row .stock_chart > div:last-child span.act {
-  font-weight: bold;
-}
-#view_stock .row #stock_info .name {
-  font-size: 36px;
-}
-#view_stock .row #stock_info .price {
-  font-size: 48px;
-}
-#view_stock .row #stock_info .code,
-#view_stock .row #stock_info .rate {
-  font-size: 24px;
-}
-#view_stock .row #stock_info .red {
+#view_stock .hori .red {
   color: #db5542;
 }
-#view_stock .row #stock_info .green {
+#view_stock .hori .green {
   color: #53b37b;
 }
-#view_stock .row table {
-  margin-top: 10px;
+#view_stock .hori .prices {
+  font-size: 18px;
+  margin-left: 20px;
+}
+#view_stock .rtdata > div {
+  flex: 1;
+  font-size: 16px;
+}
+#view_stock .echarts {
+  width: 100%;
+}
+#view_stock .chart_select {
+  padding-left: 30px;
+}
+#view_stock .chart_select span {
+  padding: 0 10px;
+}
+#view_stock .chart_select span.act {
+  font-weight: bold;
 }

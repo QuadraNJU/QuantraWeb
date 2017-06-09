@@ -1,0 +1,12 @@
+#view_backtest_history table {
+  margin-top: 10px;
+}
+#view_backtest_history table .red {
+  color: #db5542;
+}
+#view_backtest_history table .green {
+  color: #53b37b;
+}
+#view_backtest_history table td {
+  cursor: pointer;
+}

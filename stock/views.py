@@ -5,11 +5,10 @@ import json
 import time
 from datetime import datetime, timedelta
 
-import tushare as ts
 from django.http import HttpResponse
-from dwebsocket import accept_websocket
 
-from stock.data import stock_charts_util
+from dwebsocket import accept_websocket
+from stock.data import qtshare
 from stock.data.stock_data import StockData
 
 
@@ -33,12 +32,10 @@ def market(request):
     date = datetime.strptime(request.GET['date'], '%Y-%m-%d').date()
     index = StockData().get_index()
     info = StockData().get_info(date=date, date_start=date - timedelta(days=14))
-    print time.time() - start
 
     dates = info['date'].drop_duplicates()
     for row in dates:
         result['volumes'].append((str(row), int(info[info['date'] == row]['volume'].sum())))
-    print time.time() - start
 
     info_today = info[info['date'] == date]
     info_yesterday = info[info['date'] == date - timedelta(days=1)]
@@ -62,8 +59,6 @@ def market(request):
     result['surged'] = len(info_today[info_today.raising > 0])
     result['balanced'] = len(info_today[info_today.raising == 0])
     result['declined'] = len(info_today[info_today.raising < 0])
-
-    print time.time() - start
     return HttpResponse(json.dumps(result))
 
 
@@ -110,11 +105,11 @@ def realtime_list(request):
                     break
             result = []
             start = time.time()
-            df = ts.get_today_all()
-            for _, row in df.iloc[::-1].iterrows():
+            df = qtshare.today_list()
+            for _, row in df.iterrows():
                 if row['volume'] > 0:
-                    result.append((row['code'], row['name'], row['open'], row['high'], row['low'], row['trade'],
-                                   row['settlement'], row['changepercent'] / 100, row['volume'], row['turnoverratio'] / 100))
+                    result.append((row['code'], row['name'], row['open'], row['high'], row['low'], row['price'],
+                                   row['yest_close'], row['rate'], row['volume'], row['turn_over']))
             request.websocket.send(json.dumps(result))
             time.sleep(10)
     else:
@@ -131,20 +126,14 @@ def realtime_price(request):
                     break
             result = {'ticks': [], 'prices': [], 'volumes': []}
             try:
-                df = ts.get_today_ticks('%06d' % int(request.GET['code']))
-                print ''
-                today = datetime.now().strftime('%Y-%m-%d')
-                current_minute = ''
-                for _, row in df.iloc[::-1].iterrows():
-                    minute = row['time'][:5]
-                    if minute != current_minute:
-                        current_minute = minute
-                        result['ticks'].append(today + ' ' + minute)
-                        result['prices'].append(row['price'])
-                        result['volumes'].append(row['volume'])
+                df = qtshare.today_ticks(int(request.GET['code']))
+                for _, row in df.iterrows():
+                    result['ticks'].append(row['tick'])
+                    result['prices'].append(row['price'])
+                    result['volumes'].append(row['volume'])
             except:
                 pass
-            result['quotes'] = ts.get_realtime_quotes('%06d' % int(request.GET['code'])).iloc[0].to_dict()
+            result['quotes'] = qtshare.today_quotes(int(request.GET['code'])).to_dict()
             request.websocket.send(json.dumps(result))
             time.sleep(10)
     else:

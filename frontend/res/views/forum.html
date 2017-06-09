@@ -1,0 +1,169 @@
+<link rel="stylesheet" href="res/styles/forum.css">
+
+<div id="view_forum" class="fix-width">
+    <div class="header">
+        <h1><i class="mdi mdi-forum"></i> 讨论区</h1>
+    </div>
+    <div v-if="selected > 0">
+        <button class="btn btn-primary" @click="selected = 0">
+            <i class="mdi mdi-arrow-left"></i> 返回讨论区
+        </button>
+    </div>
+    <div v-if="selected <= 0">
+        <div class="card" v-for="t in threads">
+            <div class="icon">
+                <i class="mdi mdi-format-quote-open"></i>
+            </div>
+            <div>
+                <div class="title">
+                    <a href="javascript:" @click="selected = t.id">{{ t.title }}</a>
+                </div>
+                <div class="info">
+                    <span v-if="t.tag != ''"><span class="user">{{ t.tag }}</span> |</span>
+                    由 <span class="user">{{ t.username }}</span> 发表于 {{ t.time }} |
+                    最后回复 {{ t.last_reply }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div v-else>
+        <div class="card">
+            <div class="icon">
+                <i class="mdi mdi-format-quote-open"></i>
+            </div>
+            <div>
+                <div class="title">
+                    {{ thread.title }}
+                </div>
+                <div class="info">
+                    <span v-if="thread.tag != ''"><span class="user">{{ thread.tag }}</span> |</span>
+                    <span class="user">{{ thread.username }}</span> 发表于 {{ thread.time }}
+                </div>
+                <div class="content">
+                    {{ thread.content }}
+                </div>
+            </div>
+        </div>
+        <h4><i class="mdi mdi-format-quote-close"></i> 回复（{{ replies.length }}）</h4>
+        <div class="card" v-for="reply in replies">
+            <div class="icon">
+                <i class="mdi mdi-format-quote-close"></i>
+            </div>
+            <div>
+                <div class="info">
+                    <span class="user">{{ reply.username }}</span> 回复于 {{ reply.time }}
+                </div>
+                <div class="content">
+                    {{ reply.content }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="new">
+        <h4 v-if="selected <= 0"><i class="mdi mdi-plus"></i> 发表新主题</h4>
+        <h4 v-else><i class="mdi mdi-plus"></i> 发表新回复</h4>
+        <div class="form-group">
+            <bs-input v-if="selected <= 0" v-model="new_t.title" placeholder="请输入标题"></bs-input>
+            <bs-input type="textarea" v-model="new_t.content" placeholder="请输入内容"></bs-input>
+            <div style="display: flex;">
+                <div style="flex: 1;">
+                    <typeahead v-if="selected <= 0" v-model="new_t.tag" :data="stock_list" placeholder="相关股票（可选）"
+                               style="width: 50%;"></typeahead>
+                </div>
+                <div style="margin-left: 10px;">
+                    <button class="btn btn-success" v-on:click="send">
+                        <i class="mdi mdi-send"></i>
+                        <span v-if="selected <= 0">发表主题</span>
+                        <span v-else>发表回复</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    (function () {
+        Vue.component('bs-input', VueStrap.input);
+        Vue.component('typeahead', VueStrap.typeahead);
+        var view_forum = new Vue({
+            el: '#view_forum',
+            data: {
+                threads: [],
+                new_t: {
+                    title: '',
+                    content: '',
+                    tag: ''
+                },
+                stock_list: [],
+                selected: 0,
+                thread: {},
+                replies: []
+            },
+            watch: {
+                selected: function () {
+                    app.views.setParam({thread: this.selected});
+                    if (this.selected > 0) {
+                        this.loadThread();
+                    }
+                }
+            },
+            methods: {
+                loadForum: function () {
+                    app.modals.showLoading('正在加载讨论区');
+                    app.requests.get('/api/forum/getlist', function (res) {
+                        view_forum.threads = res.threads;
+                        if (app.views.param.thread) {
+                            view_forum.selected = app.views.param.thread;
+                        }
+                    }).always(function () {
+                        app.modals.hideLoading();
+                    });
+                },
+                loadThread: function () {
+                    app.modals.showLoading('正在加载帖子');
+                    app.requests.get('/api/forum/get?id=' + this.selected, function (res) {
+                        view_forum.thread = res.thread;
+                        view_forum.replies = res.replies;
+                    }).always(function () {
+                        app.modals.hideLoading();
+                    });
+                },
+                send: function () {
+                    if (this.selected > 0) {
+                        this.new_t.title = '';
+                        this.new_t.tag = '';
+                    }
+                    app.modals.showLoading('正在发表');
+                    app.requests.post('/api/forum/new', {
+                        title: this.new_t.title,
+                        content: this.new_t.content,
+                        tag: this.new_t.tag,
+                        reply: this.selected
+                    }, function (res) {
+                        view_forum.new_t = {
+                            title: '',
+                            content: '',
+                            tag: ''
+                        };
+                        if (view_forum.selected > 0) {
+                            view_forum.loadThread();
+                        } else {
+                            view_forum.loadForum();
+                        }
+                    }).always(function () {
+                        app.modals.hideLoading();
+                    });
+                }
+            }
+        });
+
+        var src = [];
+        for (var code in app.index.stocks) {
+            src.push(app.utils.formatCode(code) + ' ' + app.index.stocks[code].name + ' ' + app.index.stocks[code].pinyin);
+        }
+        view_forum.stock_list = src;
+
+        view_forum.loadForum();
+    })();
+</script>

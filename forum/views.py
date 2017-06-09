@@ -32,6 +32,7 @@ def get_list(request):
             threads.append({'id': thread.id, 'time': thread.time.strftime('%Y/%m/%d %H:%M:%S'),
                             'last_reply': last_reply.strftime('%Y/%m/%d %H:%M:%S'),
                             'username': __get_username(thread.uid), 'title': thread.title, 'tag': thread.tag})
+    threads = sorted(threads, key=lambda t: t['last_reply'], reverse=True)
     return JsonResponse({'ok': True, 'threads': threads})
 
 

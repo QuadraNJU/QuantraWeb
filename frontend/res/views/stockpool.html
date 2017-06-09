@@ -3,9 +3,8 @@
 <div id="view_stockpool" class="container-fluid">
     <div class="row">
         <div class="col-md-2 left">
-            <spinner v-model="loading_pool" size="xl" text="正在加载股票池"></spinner>
             <button class="btn btn-primary" v-if="selected.name" @click="selected = {}">显示所有股票</button>
-            <accordion type="info" v-if="!loading_pool">
+            <accordion type="info">
                 <panel is-open header="基本版块">
                     <div class="list">
                         <div v-for="pool in pools.base" @click="selected = pool" v-bind:class="{ act: selected.name == pool.name }">
@@ -40,8 +39,8 @@
         </div>
         <div class="col-md-10">
             <div class="header">
-                <h1>{{ selected.name ? selected.name : '股票行情' }}</h1>
-                <div v-if="selected.id">
+                <h1>股票行情 {{ selected.name ? '[' + selected.name + ']' : '' }}</h1>
+                <div v-if="selected.id" style="margin-right: 10px;">
                     <button class="btn btn-primary" v-on:click="modifyClick">
                         <i class="mdi mdi-pencil"></i> 修改
                     </button>
@@ -49,24 +48,29 @@
                         <i class="mdi mdi-delete"></i> 删除
                     </button>
                 </div>
-                <div>
+                <div v-if="realtime == 0">
                     <i class="mdi mdi-18px mdi-calendar"></i> 日期选择
-                    <datepicker v-model="date" :disabled-days-of-Week="disabled_days" format="yyyy-MM-dd"></datepicker>
+                    <datepicker v-model="date" :disabled-days-of-Week="[0,6]" format="yyyy-MM-dd"></datepicker>
                 </div>
+                <button-group v-model="realtime" type="info">
+                    <radio :selected-value="0"><i class="mdi mdi-history"></i> 历史</radio>
+                    <radio :selected-value="1"><i class="mdi mdi-timer"></i> 实时</radio>
+                </button-group>
             </div>
-            <spinner v-model="loading_stock" size="xl" text="正在加载股票行情"></spinner>
-            <table id="table" class="table table-hover">
+            <table class="table table-hover">
                 <thead>
                 <tr>
-                    <th data-sortable="true">股票代码</th>
-                    <th data-sortable="true">股票名称</th>
-                    <th data-sortable="true">涨幅</th>
-                    <th data-sortable="true">今收</th>
-                    <th data-sortable="true">交易量</th>
-                    <th data-sortable="true">今开</th>
-                    <th data-sortable="true">最高</th>
-                    <th data-sortable="true">最低</th>
-                    <th data-sortable="true">昨收</th>
+                    <th>股票代码</th>
+                    <th>股票名称</th>
+                    <th>涨幅</th>
+                    <th v-if="realtime == 0">今收</th>
+                    <th v-if="realtime == 1">现价</th>
+                    <th>交易量</th>
+                    <th>今开</th>
+                    <th>最高</th>
+                    <th>最低</th>
+                    <th>昨收</th>
+                    <th v-if="realtime == 1">换手率</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -81,6 +85,7 @@
                     <td>{{ stk[3] }}</td>
                     <td>{{ stk[4] }}</td>
                     <td>{{ stk[6] }}</td>
+                    <td v-if="realtime == 1">{{ percent(stk[9]) }}</td>
                 </tr>
                 </tbody>
             </table>
@@ -97,10 +102,11 @@
 
 <script type="text/javascript">
     $(function () {
-        Vue.component('spinner', VueStrap.spinner);
         Vue.component('datepicker', VueStrap.datepicker);
         Vue.component('accordion', VueStrap.accordion);
         Vue.component('panel', VueStrap.panel);
+        Vue.component('button-group', VueStrap.buttonGroup);
+        Vue.component('radio', VueStrap.radio);
         var view_stockpool = new Vue({
             el: '#view_stockpool',
             data: {
@@ -108,9 +114,7 @@
                 selected: {},
                 stocks: [],
                 date: '',
-                disabled_days: [0, 6],
-                loading_pool: true,
-                loading_stock: true,
+                realtime: app.views.param.realtime ? app.views.param.realtime : 0,
                 confirmDelete: false
             },
             methods: {
@@ -126,12 +130,52 @@
                     this.confirmDelete = true;
                 },
                 deleteConfirm: function (e) {
-                    $.post('/api/trade/pool/delete?id=' + this.selected.id).always(function () {
+                    app.modals.showLoading('正在删除股票池');
+                    app.requests.get('/api/trade/pool/delete?id=' + this.selected.id).always(function () {
+                        app.modals.hideLoading();
                         app.views.load('stockpool', app.views.param);
                     });
                 },
                 rowClick: function (e) {
-                    app.views.load('stock', {code: e.currentTarget.dataset.code});
+                    app.views.load('stock', {code: e.currentTarget.dataset.code, realtime: this.realtime});
+                },
+
+                loadStocks: function () {
+                    view_stockpool.stocks = [];
+                    app.requests.wsClose();
+                    if (this.realtime == 0 && this.date != '') {
+                        app.modals.showLoading('正在加载股票行情');
+                        app.requests.get('/api/stock/stock_list?date=' + this.date, function (result) {
+                            stock_data = result;
+                            view_stockpool.filterStocks();
+                        }).always(function () {
+                            app.modals.hideLoading();
+                        });
+                    } else if (this.realtime == 1) {
+                        app.modals.showLoading('正在加载股票行情');
+                        app.requests.wsConnect('ws/realtime_list');
+                        app.requests.ws.onmessage = function (msg) {
+                            stock_data = JSON.parse(msg.data);
+                            console.log(stock_data);
+                            view_stockpool.filterStocks();
+                            app.modals.hideLoading();
+                        };
+                    }
+                },
+                filterStocks: function () {
+                    var stocks;
+                    if (this.selected.stocks) {
+                        stocks = this.selected.stocks;
+                    } else {
+                        stocks = Object.keys(app.index.stocks);
+                    }
+                    var tmp_stocks = [];
+                    for (var key in stock_data) {
+                        if (stocks.indexOf(stock_data[key][0] + '') >= 0 || stocks.indexOf(stock_data[key][0]) >= 0) {
+                            tmp_stocks.push(stock_data[key]);
+                        }
+                    }
+                    this.stocks = tmp_stocks;
                 }
             },
             watch: {
@@ -139,38 +183,30 @@
                     var date = view_stockpool.date;
                     if (date != '') {
                         app.views.setParam({date: date});
-                        view_stockpool.stocks = [];
-                        this.loading_stock = true;
-                        $.getJSON('/api/stock/stock_list?date=' + date, function (result) {
-                            stock_data = result;
-                            view_stockpool.selected = Object.assign({}, view_stockpool.selected);
-                        }).always(function () {
-                            view_stockpool.loading_stock = false;
-                        });
+                        if (this.realtime == 0) {
+                            this.loadStocks();
+                        }
                     }
                 },
                 selected: function () {
                     if (this.selected.stocks) {
                         app.views.setParam({pool: this.selected.name});
-                        var tmp_stocks = [];
-                        for (var key in stock_data) {
-                            if (this.selected.stocks.indexOf(stock_data[key][0]) >= 0) {
-                                tmp_stocks.push(stock_data[key]);
-                            }
-                        }
-                        this.stocks = tmp_stocks;
                     } else {
                         app.views.setParam({pool: undefined});
-                        this.stocks = stock_data;
                     }
+                    this.filterStocks();
+                },
+                realtime: function () {
+                    app.views.setParam({realtime: this.realtime});
+                    this.loadStocks();
                 }
             }
         });
         var stock_data = [];
 
-        $.getJSON('/api/trade/pool/get', function (json) {
+        app.modals.showLoading('正在加载股票池列表');
+        app.requests.get('/api/trade/pool/get', function (json) {
             view_stockpool.pools = json;
-            view_stockpool.loading_pool = false;
             if (app.views.param.pool) {
                 var merged = json.base.concat(json.industries).concat(json.custom);
                 for (var key in merged) {
@@ -184,6 +220,8 @@
             } else {
                 view_stockpool.date = app.index.max_date;
             }
+        }).always(function () {
+            app.modals.hideLoading();
         });
     });
 </script>

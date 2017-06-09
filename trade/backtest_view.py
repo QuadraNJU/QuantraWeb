@@ -28,7 +28,7 @@ def backtest(request):
             try:
                 result = backtest_engine.run(args, request.websocket)
             except Exception as e:
-                request.websocket.send(json.dumps({'error': True, 'msg': e.message}))
+                request.websocket.send(json.dumps({'error': True, 'msg': str(e)}))
                 return
             if result:
                 BacktestResult(uid=uid, time=datetime.now(), strategy=strategy_id, parameter=msg,

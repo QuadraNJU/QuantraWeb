@@ -30,7 +30,7 @@
   margin: 0;
 }
 #view_stockpool .header .datepicker {
-  margin-left: 10px;
+  margin: 0 10px;
 }
 #view_stockpool table {
   margin-top: 10px;

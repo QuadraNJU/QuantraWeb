@@ -42,6 +42,10 @@
                    data-view="strategy">
                 回测
             </a></li>
+            <li><a href="javascript:" v-bind:class="{ act: selected == 'forum' }" v-on:click="navClick"
+                   data-view="forum">
+                讨论区
+            </a></li>
         </ul>
     </div>
     <div id="userinfo">
@@ -172,6 +176,9 @@
                 },
                 hideLoading: function () {
                     this.loadingCount--;
+                    if (this.loadingCount < 0) {
+                        this.loadingCount = 0;
+                    }
                 }
             }
         });
