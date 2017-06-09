@@ -28,18 +28,19 @@ def get_list(request):
             else:
                 last_reply = thread.time
             threads.append({'id': thread.id, 'time': thread.time, 'last_reply': last_reply,
-                            'username': username, 'tag': thread.tag})
+                            'username': username, 'title': thread.title, 'tag': thread.tag})
     return JsonResponse({'ok': True, 'threads': threads})
 
 
 def new_thread(request):
     if 'uid' in request.session:
         uid = request.session['uid']
+        title = request.POST.get('title', '')
         content = request.POST.get('content', '')
         tag = request.POST.get('tag', '')
         reply = request.POST.get('reply', 0)
 
-        new_model = Thread(uid=uid, time=datetime.now(), content=content, tag=tag, reply=reply)
+        new_model = Thread(uid=uid, time=datetime.now(), title=title, content=content, tag=tag, reply=reply)
         try:
             new_model.save()
             return JsonResponse({'ok': True, 'id': new_model.id})
