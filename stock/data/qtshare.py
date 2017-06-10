@@ -64,6 +64,10 @@ def today_quotes(code):
     return df.iloc[0]
 
 
+def stock_news(code):
+    return tushare.get_notices('%06d' % code)
+
+
 if __name__ == '__main__':
     # print today_list()
     print(today_ticks_tushare(1))

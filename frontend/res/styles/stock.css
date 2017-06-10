@@ -39,3 +39,6 @@
 #view_stock .chart_select span.act {
   font-weight: bold;
 }
+#view_stock h4 {
+  margin-top: 20px;
+}

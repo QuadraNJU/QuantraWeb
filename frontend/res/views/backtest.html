@@ -141,9 +141,6 @@
             },
             computed: {
                 loading: function () {
-                    if (!this.progress === 0) {
-                        setTimeout(function () { $('body').css('overflow-y', ''); }, 0);
-                    }
                     return this.progress === 0;
                 }
             },
