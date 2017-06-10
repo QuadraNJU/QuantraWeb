@@ -19,7 +19,6 @@
                     <a href="javascript:" @click="selected = t.id">{{ t.title }}</a>
                 </div>
                 <div class="info">
-                    <span v-if="t.tag != ''"><span class="user">{{ t.tag }}</span> |</span>
                     由 <span class="user">{{ t.username }}</span> 发表于 {{ t.time }} |
                     最后回复 {{ t.last_reply }}
                 </div>
@@ -31,16 +30,19 @@
             <div class="icon">
                 <i class="mdi mdi-format-quote-open"></i>
             </div>
-            <div>
+            <div style="width: 100%;">
                 <div class="title">
                     {{ thread.title }}
                 </div>
                 <div class="info">
-                    <span v-if="thread.tag != ''"><span class="user">{{ thread.tag }}</span> |</span>
                     <span class="user">{{ thread.username }}</span> 发表于 {{ thread.time }}
                 </div>
                 <div class="content">
                     {{ thread.content }}
+                </div>
+                <div class="tag" v-if="thread.tag != ''">
+                    该帖子中提到的股票：
+                    <a href="javascript:" v-on:click="tagClick">{{ thread.tag }}</a>
                 </div>
             </div>
         </div>
@@ -109,6 +111,9 @@
                 }
             },
             methods: {
+                tagClick: function (e) {
+                    app.views.load('stock', {code: Number(e.target.innerHTML.split(' ')[0])})
+                },
                 loadForum: function () {
                     app.modals.showLoading('正在加载讨论区');
                     app.requests.get('/api/forum/getlist', function (res) {

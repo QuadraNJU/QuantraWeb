@@ -5,7 +5,6 @@ import json
 import time
 from datetime import datetime, timedelta
 
-import keras
 from django.http import HttpResponse, JsonResponse
 
 from dwebsocket import accept_websocket
@@ -14,7 +13,6 @@ from stock.data.stock_data import StockData
 
 
 # Create your views here.
-from stock.lstm_util import predict_util
 
 
 def get_index(request):
@@ -99,33 +97,29 @@ def stock(request):
     return HttpResponse(json.dumps(result))
 
 
+def stock_news(request):
+    code = int(request.GET.get('code', 0))
+    count = int(request.GET.get('count', 10))
+    df = qtshare.stock_news(code)
+    if len(df) > count:
+        df = df[0:count]
+    return HttpResponse(json.dumps(df.to_dict(orient='record')))
+
+
 def stock_predict(request):
+    import keras
+    from stock.predict_util import lstm
+
     predict_correct = 0
     code = int(request.GET['code'])
-    infos = list(StockData().get_info(code=code, limit=100)['close'])
-    window = infos[0]
+    data = list(StockData().get_info(code=code, limit=100)['close'])
+    window = data[0]
 
     model = keras.models.load_model('model.h5')
-    predict_list, real_list = predict_util.data_predict(infos, model)
-    keras.backend.clear_session()
+    data = lstm.pure_deal_data(data, 50)
+    predict_list = lstm.pure_predict(model, data)
     predict_list = [(i + 1) * window for i in predict_list]
-    real_list = [(i + 1) * window for i in real_list]
-
-    for i in range(len(predict_list) - 1):
-        if predict_list[i+1] - predict_list[i] < 0 and real_list[i+1] - real_list[i] < 0:
-            predict_correct += 1
-        elif predict_list[i+1] - predict_list[i] > 0 and real_list[i+1] - real_list[i] > 0:
-            predict_correct += 1
-
-    return JsonResponse({'result': float(predict_correct) / len(predict_list)})
-
-
-def build_model(request):
-    date_start, date_end = StockData().get_date_range()
-    train_data = list(StockData().get_info(code=1)['close'])
-    model = predict_util.build_model(train_data)
-    model.save('model.h5')
-    return JsonResponse({'ok': True})
+    return JsonResponse({'len': len(predict_list), 'cont': predict_list})
 
 
 @accept_websocket

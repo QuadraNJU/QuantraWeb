@@ -79,6 +79,28 @@
         <h4><i class="mdi mdi-chart-line"></i> 实时行情</h4>
         <chart auto-resize :options="rtChart" ref="rtChart" style="height: 600px;"></chart>
     </div>
+
+    <h4><i class="mdi mdi-newspaper"></i> 股票相关新闻</h4>
+    <div v-if="stock_news.length == 0">正在加载新闻 ...</div>
+    <table v-else class="table table-striped table-hover">
+        <thead>
+        <tr>
+            <th>日期</th>
+            <th>类型</th>
+            <th>标题</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="news in stock_news">
+            <td>{{ news.date }}</td>
+            <td>{{ news.type }}</td>
+            <td><a v-bind:href="news.url" target="_blank">{{ news.title }}</a></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!--<h4><i class="mdi mdi-trending-up"></i> 股票走势预测</h4>
+    <div>{{ predict }}</div>-->
 </div>
 
 <script type="text/javascript">
@@ -243,7 +265,9 @@
                 rtData: {},
                 kChart: kChartOptions,
                 rtChart: rtChartOptions,
-                extraChart: 'vol'
+                extraChart: 'vol',
+                stock_news: [],
+                predict: '正在加载走势预测 ...'
             },
             computed: {
                 rate: function () {
@@ -375,5 +399,8 @@
         });
 
         view_stock.loadStocks();
+        app.requests.get('/api/stock/news?code=' + view_stock.code, function (res) {
+            view_stock.stock_news = res;
+        });
     });
 </script>
