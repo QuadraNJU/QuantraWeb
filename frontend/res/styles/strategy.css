@@ -41,3 +41,9 @@
 #view_strategy .right #code_editor {
   font-size: 14px;
 }
+#view_strategy .right .no_select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: dimgray;
+}

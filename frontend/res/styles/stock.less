@@ -10,22 +10,32 @@
       font-size: 32px;
       color: #0055a2;
     }
+  }
 
-    .price {
-      font-size: 28px;
-    }
+  .red {
+    color: #db5542;
+  }
 
-    .red {
-      color: #db5542;
-    }
+  .green {
+    color: #53b37b;
+  }
 
-    .green {
-      color: #53b37b;
-    }
+  .prices {
+    display: flex;
+    padding: 10px 0;
 
-    .prices {
-      font-size: 18px;
-      margin-left: 20px;
+    >div {
+      flex: 1;
+      text-align: center;
+
+      >:first-child {
+        color: dimgray;
+        font-size: 16px;
+      }
+
+      >:last-child {
+        font-size: 32px;
+      }
     }
   }
 

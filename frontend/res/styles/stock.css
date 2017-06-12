@@ -10,18 +10,26 @@
   font-size: 32px;
   color: #0055a2;
 }
-#view_stock .hori .price {
-  font-size: 28px;
-}
-#view_stock .hori .red {
+#view_stock .red {
   color: #db5542;
 }
-#view_stock .hori .green {
+#view_stock .green {
   color: #53b37b;
 }
-#view_stock .hori .prices {
-  font-size: 18px;
-  margin-left: 20px;
+#view_stock .prices {
+  display: flex;
+  padding: 10px 0;
+}
+#view_stock .prices > div {
+  flex: 1;
+  text-align: center;
+}
+#view_stock .prices > div > :first-child {
+  color: dimgray;
+  font-size: 16px;
+}
+#view_stock .prices > div > :last-child {
+  font-size: 32px;
 }
 #view_stock .rtdata > div {
   flex: 1;

@@ -1,0 +1,184 @@
+<link rel="stylesheet" href="res/styles/simulate.css">
+
+<div id="view_simulate" class="fix-width">
+    <div class="header">
+        <h1><i class="mdi mdi-square-inc-cash"></i> 模拟交易</h1>
+    </div>
+
+    <div class="card">
+        <div class="title">
+            <i class="mdi mdi-account"></i> 我的账户
+        </div>
+        <div class="account_info">
+            <div>
+                <div>总资产</div>
+                <div>{{ assets }}</div>
+            </div>
+            <div>
+                <div>可用资产（现金）</div>
+                <div>{{ cash }}</div>
+            </div>
+            <div>
+                <div>当前收益率</div>
+                <div v-bind:class="{ red: total_rate > 0, green: total_rate < 0 }">{{ total_rate }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="title">
+            <i class="mdi mdi-format-list-bulleted"></i> 当前持仓
+        </div>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>股票代码</th>
+                <th>股票名称</th>
+                <th>平均买入价格</th>
+                <th>当前价格</th>
+                <th>当前收益率</th>
+                <th>持仓数量</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="po in positions" v-bind:class="{ red: po.price > po.buy_price, green: po.price < po.buy_price }">
+                <td>{{ code(po.code) }}</td>
+                <td>{{ getName(po.code) }}</td>
+                <td>{{ po.buy_price }}</td>
+                <td>{{ po.price }}</td>
+                <td>{{ percent((po.price - po.buy_price) / po.buy_price) }}</td>
+                <td>{{ po.amount }}</td>
+                <td><button class="btn btn-danger" @click="sellClick(po)">卖出</button></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="title">
+            <i class="mdi mdi-square-inc-cash"></i> 交易操作
+        </div>
+        <div class="form-horizontal">
+            <div class="row">
+                <label class="col-sm-1 control-label">股票</label>
+                <div class="col-sm-4">
+                    <typeahead v-model="stock_select" :data="stock_list" placeholder="股票代码/名称/拼音首字母..." :on-hit="stock_hit"></typeahead>
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-1 control-label">操作</label>
+                <div class="col-sm-4" style="padding: 5px 15px;">
+                    <input v-model="trade.op" type="radio" value="buy"> 买入
+                    <input v-model="trade.op" type="radio" value="sell"> 卖出
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-sm-1 control-label">数量</label>
+                <div class="col-sm-4">
+                    <input v-model="trade.amount" class="form-control" type="number" placeholder="股">
+                </div>
+                <div class="col-sm-7">
+                    {{ hint }}
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-trade" v-on:click="doTrade">
+            <i class="mdi mdi-arrow-right"></i> 提交
+        </button>
+    </div>
+</div>
+
+<script type="text/javascript">
+    (function () {
+        Vue.component('typeahead', VueStrap.typeahead);
+        Vue.component('radio', VueStrap.radio);
+        var view_simulate = new Vue({
+            el: '#view_simulate',
+            data: {
+                cash: 0,
+                assets: 0,
+                positions: [],
+                stock_list: [],
+                stock_select: '',
+                trade: {
+                    stock: 0,
+                    op: 'buy',
+                    amount: 100
+                },
+                hint: ''
+            },
+            computed: {
+                total_rate: function () {
+                    return (this.assets - 100000) / 1000;
+                }
+            },
+            methods: {
+                code: app.utils.formatCode,
+                percent: app.utils.formatPercent,
+                getName: function (code) {
+                    return app.index.stocks[code].name;
+                },
+                stock_hit: function (item) {
+                    var selected = item.split(' ')[0];
+                    this.trade.stock = Number(selected);
+                    this.loadHint();
+                    return selected;
+                },
+                sellClick: function (po) {
+                    this.trade.op = 'sell';
+                    this.stock_select = this.code(po.code);
+                },
+                loadAccount: function () {
+                    app.modals.showLoading('正在加载交易账户');
+                    app.requests.get('/api/trade/simulate/getlist', function (res) {
+                        view_simulate.cash = res.cash;
+                        view_simulate.assets = res.assets;
+                        view_simulate.positions = res.positions;
+                    }).always(function () {
+                        app.modals.hideLoading();
+                    });
+                },
+                loadHint: function () {
+                    this.hint = '';
+                    if (this.trade.stock && this.trade.stock != '') {
+                        app.requests.get('/api/trade/simulate/getprice?code=' + this.trade.stock, function (res) {
+                            var hint = '当前价格：' + res.price + "，";
+                            if (view_simulate.trade.op == 'buy') {
+                                hint += '最多可买 ' + Math.floor(view_simulate.cash / res.price) + ' 股';
+                            } else {
+                                var max = 0;
+                                for (var key in view_simulate.positions) {
+                                    if (view_simulate.positions[key].code == Number(view_simulate.trade.stock)) {
+                                        max = view_simulate.positions[key].amount;
+                                        break;
+                                    }
+                                }
+                                hint += '最多可卖 ' + max + ' 股';
+                            }
+                            view_simulate.hint = hint;
+                        });
+                    }
+                },
+                doTrade: function () {
+                    app.modals.showLoading('正在提交交易');
+                    app.requests.post('/api/trade/simulate/trade', {
+                        code: (this.trade.stock > 0) ? this.trade.stock : Number(this.stock_select),
+                        amount: (this.trade.op == 'buy') ? this.trade.amount : -Number(this.trade.amount)
+                    }, function () {
+                        view_simulate.loadAccount();
+                    }).always(function () {
+                        app.modals.hideLoading();
+                    });
+                }
+            }
+        });
+
+        var src = [];
+        for (var code in app.index.stocks) {
+            src.push(app.utils.formatCode(code) + ' ' + app.index.stocks[code].name + ' ' + app.index.stocks[code].pinyin);
+        }
+        view_simulate.stock_list = src;
+        view_simulate.loadAccount();
+    })();
+</script>

@@ -147,7 +147,7 @@
             methods: {
                 percent: app.utils.formatPercent,
                 beginBacktest: function () {
-                    var ws = new WebSocket('ws://127.0.0.1:8000/ws/backtest?id=' + this.strategy.id);
+                    var ws = new WebSocket('ws://' + location.host + '/ws/backtest?id=' + this.strategy.id);
                     var _this = this;
                     _this.results = [];
                     ws.onopen = function () {

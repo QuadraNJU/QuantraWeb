@@ -10,7 +10,7 @@
         </button>
     </div>
     <div v-if="selected <= 0">
-        <div class="card" v-for="t in threads">
+        <div class="thread_card" v-for="t in threads">
             <div class="icon">
                 <i class="mdi mdi-format-quote-open"></i>
             </div>
@@ -26,7 +26,7 @@
         </div>
     </div>
     <div v-else>
-        <div class="card">
+        <div class="thread_card">
             <div class="icon">
                 <i class="mdi mdi-format-quote-open"></i>
             </div>
@@ -47,7 +47,7 @@
             </div>
         </div>
         <h4><i class="mdi mdi-format-quote-close"></i> 回复（{{ replies.length }}）</h4>
-        <div class="card" v-for="reply in replies">
+        <div class="thread_card" v-for="reply in replies">
             <div class="icon">
                 <i class="mdi mdi-format-quote-close"></i>
             </div>
@@ -61,16 +61,16 @@
             </div>
         </div>
     </div>
-    <div class="new">
-        <h4 v-if="selected <= 0"><i class="mdi mdi-plus"></i> 发表新主题</h4>
-        <h4 v-else><i class="mdi mdi-plus"></i> 发表新回复</h4>
+    <div class="card new">
+        <div class="title" v-if="selected <= 0"><i class="mdi mdi-plus"></i> 发表新主题</div>
+        <div class="title" v-else><i class="mdi mdi-plus"></i> 发表新回复</div>
         <div class="form-group">
             <bs-input v-if="selected <= 0" v-model="new_t.title" placeholder="请输入标题"></bs-input>
             <bs-input type="textarea" v-model="new_t.content" placeholder="请输入内容"></bs-input>
             <div style="display: flex;">
                 <div style="flex: 1;">
                     <typeahead v-if="selected <= 0" v-model="new_t.tag" :data="stock_list" placeholder="相关股票（可选）"
-                               style="width: 50%;"></typeahead>
+                               :on-hit="stock_hit" style="width: 50%;"></typeahead>
                 </div>
                 <div style="margin-left: 10px;">
                     <button class="btn btn-success" v-on:click="send">
@@ -113,6 +113,10 @@
             methods: {
                 tagClick: function (e) {
                     app.views.load('stock', {code: Number(e.target.innerHTML.split(' ')[0])})
+                },
+                stock_hit: function (item) {
+                    var s = item.split(' ');
+                    return s[0] + ' ' + s[1];
                 },
                 loadForum: function () {
                     app.modals.showLoading('正在加载讨论区');

@@ -26,10 +26,8 @@ def market(request):
     start = time.time()
     result = {
         'volumes': [],
-        'surged_limit': [],
-        'surged_over_five_per': [],
-        'decline_limit': [],
-        'decline_over_five_per': [],
+        'top_surge': [],
+        'top_decline': [],
     }
     date = datetime.strptime(request.GET['date'], '%Y-%m-%d').date()
     index = StockData().get_index()
@@ -40,28 +38,29 @@ def market(request):
         result['volumes'].append((str(row), int(info[info['date'] == row]['volume'].sum())))
 
     info_today = info[info['date'] == date]
-    info_yesterday = info[info['date'] == date - timedelta(days=1)]
+    for i in range(1, 14):
+        info_yesterday = info[info['date'] == date - timedelta(days=i)]
+        if len(info_yesterday) > 0:
+            break
 
     info_today['name'] = index['name']
     info_today['adjclose_last'] = info_yesterday['adjclose']
     info_today['raising'] = (info_today.adjclose - info_today.adjclose_last) / info_today.adjclose_last
 
-    for code, stk in info_today.iterrows():
-        line = {'code': int(code), 'name': stk['name'], 'close': stk['close'], 'rate': stk['raising']}
-        if stk['raising'] >= 0.1:
-            result['surged_limit'].append(line)
-        elif stk['raising'] > 0.05:
-            result['surged_over_five_per'].append(line)
-        elif stk['raising'] <= -0.1:
-            result['decline_limit'].append(line)
-        elif stk['raising'] < -0.05:
-            result['decline_over_five_per'].append(line)
+    info_today = info_today.dropna().sort_values('raising', ascending=False)
+
+    for code, stk in info_today[info_today['raising'] >= 0].iloc[:20].iterrows():
+        result['top_surge'].append(
+            {'code': int(code), 'name': stk['name'], 'close': stk['close'], 'rate': stk['raising']})
+    for code, stk in info_today[info_today['raising'] <= 0].iloc[:-21:-1].iterrows():
+        result['top_decline'].append(
+            {'code': int(code), 'name': stk['name'], 'close': stk['close'], 'rate': stk['raising']})
 
     result['total'] = len(info_today)
     result['surged'] = len(info_today[info_today.raising > 0])
     result['balanced'] = len(info_today[info_today.raising == 0])
     result['declined'] = len(info_today[info_today.raising < 0])
-    return HttpResponse(json.dumps(result))
+    return JsonResponse(result)
 
 
 def stock_list(request):

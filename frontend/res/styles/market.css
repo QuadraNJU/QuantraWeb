@@ -25,12 +25,11 @@
   width: 100%;
   height: 300px;
 }
-#view_market h3 {
-  margin: 0;
-  display: inline-block;
-  padding: 0 5px 5px 0;
-  border-bottom: 2px solid #3d77c7;
-  color: #3d77c7;
+#view_market table .red {
+  color: #db5542;
+}
+#view_market table .green {
+  color: #53b37b;
 }
 #view_market table td {
   cursor: pointer;

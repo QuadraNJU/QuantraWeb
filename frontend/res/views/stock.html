@@ -13,25 +13,44 @@
             <radio :selected-value="1"><i class="mdi mdi-timer"></i> 实时</radio>
         </button-group>
     </div>
-    <div class="hori" style="margin-bottom: 20px;">
-        <div class="price" v-bind:class="{ red: rate > 0, green: rate < 0 }">
-            ¥ {{ latest.price }}
-            <span v-if="rate >= 0" class="rate">
-                ▲ {{ percent(rate) }}
-            </span>
-            <span v-else class="rate">
-                ▼ {{ percent(rate) }}
-            </span>
+    <div class="card">
+        <div class="title">
+            <i class="mdi mdi-cash"></i> 股票价格
         </div>
         <div class="prices">
-            昨收: {{ latest.yest_close }}
-            今开: {{ latest.open }}
-            最高: {{ latest.high }}
-            最低: {{ latest.low }}
+            <div>
+                <div>当前价格</div>
+                <div v-bind:class="{ red: rate > 0, green: rate < 0 }">¥ {{ latest.price }}</div>
+            </div>
+            <div>
+                <div>涨跌幅</div>
+                <div v-bind:class="{ red: rate > 0, green: rate < 0 }">
+                    <span v-if="rate >= 0">▲ {{ percent(rate) }}</span>
+                    <span v-else>▼ {{ percent(rate) }}</span>
+                </div>
+            </div>
+            <div>
+                <div>昨收</div>
+                <div>{{ latest.yest_close }}</div>
+            </div>
+            <div>
+                <div>今开</div>
+                <div>{{ latest.open }}</div>
+            </div>
+            <div>
+                <div>最高</div>
+                <div>{{ latest.high }}</div>
+            </div>
+            <div>
+                <div>最低</div>
+                <div>{{ latest.low }}</div>
+            </div>
         </div>
     </div>
-    <div v-if="realtime == 0">
-        <h4><i class="mdi mdi-chart-line"></i> 历史行情 K 线图</h4>
+    <div class="card" v-if="realtime == 0">
+        <div class="title">
+            <i class="mdi mdi-chart-line"></i> 历史行情 K 线图
+        </div>
         <chart auto-resize :options="kChart" ref="kChart" v-on:datazoom="chartZoom" style="height: 600px;"></chart>
         <div class="chart_select">
             辅助图表切换
@@ -52,8 +71,10 @@
             </span>
         </div>
     </div>
-    <div v-if="realtime == 1">
-        <h4><i class="mdi mdi-format-list-numbers"></i> 交易实况（价格 / 成交量）</h4>
+    <div class="card" v-if="realtime == 1">
+        <div class="title">
+            <i class="mdi mdi-format-list-numbers"></i> 交易实况（价格 / 成交量）
+        </div>
         <div class="hori rtdata">
             <div>
                 买一：{{ rtData.b1_p }} / {{ rtData.b1_v }}<br>
@@ -76,28 +97,36 @@
                 卖五：{{ rtData.a5_p }} / {{ rtData.a5_v }}
             </div>
         </div>
-        <h4><i class="mdi mdi-chart-line"></i> 实时行情</h4>
+    </div>
+    <div class="card" v-if="realtime == 1">
+        <div class="title">
+            <i class="mdi mdi-chart-line"></i> 实时行情
+        </div>
         <chart auto-resize :options="rtChart" ref="rtChart" style="height: 600px;"></chart>
     </div>
 
-    <h4><i class="mdi mdi-newspaper"></i> 股票相关新闻</h4>
-    <div v-if="stock_news.length == 0">正在加载新闻 ...</div>
-    <table v-else class="table table-striped table-hover">
-        <thead>
-        <tr>
-            <th>日期</th>
-            <th>类型</th>
-            <th>标题</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="news in stock_news">
-            <td>{{ news.date }}</td>
-            <td>{{ news.type }}</td>
-            <td><a v-bind:href="news.url" target="_blank">{{ news.title }}</a></td>
-        </tr>
-        </tbody>
-    </table>
+    <div class="card">
+        <div class="title">
+            <i class="mdi mdi-newspaper"></i> 股票相关新闻
+        </div>
+        <div v-if="stock_news.length == 0">正在加载新闻 ...</div>
+        <table v-else class="table table-striped table-hover">
+            <thead>
+            <tr>
+                <th>日期</th>
+                <th>类型</th>
+                <th>标题</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="news in stock_news">
+                <td>{{ news.date }}</td>
+                <td>{{ news.type }}</td>
+                <td><a v-bind:href="news.url" target="_blank">{{ news.title }}</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 
     <!--<h4><i class="mdi mdi-trending-up"></i> 股票走势预测</h4>
     <div>{{ predict }}</div>-->

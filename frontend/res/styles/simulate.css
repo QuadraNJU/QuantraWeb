@@ -1,0 +1,24 @@
+#view_simulate .account_info {
+  display: flex;
+  padding: 10px 0;
+}
+#view_simulate .account_info > div {
+  flex: 1;
+  text-align: center;
+}
+#view_simulate .account_info > div > :first-child {
+  color: dimgray;
+  font-size: 16px;
+}
+#view_simulate .account_info > div > :last-child {
+  font-size: 32px;
+}
+#view_simulate .red {
+  color: #db5542;
+}
+#view_simulate .green {
+  color: #53b37b;
+}
+#view_simulate .btn-trade {
+  margin: 10px 40px;
+}

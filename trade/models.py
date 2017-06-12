@@ -27,3 +27,15 @@ class BacktestResult(models.Model):
     strategy = models.IntegerField(null=False)
     parameter = models.TextField(null=False)
     result = models.TextField(null=False)
+
+
+class SimAccount(models.Model):
+    uid = models.IntegerField(null=False)
+    cash = models.FloatField(null=False, default=100000)
+
+
+class Position(models.Model):
+    uid = models.IntegerField(null=False)
+    code = models.IntegerField(null=False)
+    amount = models.IntegerField(null=False, default=0)
+    buy_price = models.FloatField(null=False)

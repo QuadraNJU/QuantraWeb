@@ -111,6 +111,10 @@ var app = {
 
         formatPercent: function (pct) {
             return Math.round(pct * 10000) / 100 + '%';
+        },
+
+        toFixed: function (num) {
+            return Number(num.toFixed(2));
         }
     }
 };

@@ -94,3 +94,15 @@ header > div:nth-child(4) .modal-dialog {
 #container #content {
   height: 100%;
 }
+.card {
+  margin-top: 10px;
+  background-color: white;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+  padding: 10px 20px;
+}
+.card .title {
+  font-size: 18px;
+  border-bottom: 1px solid lightgray;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}

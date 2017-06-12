@@ -1,14 +1,14 @@
 #view_forum .header {
   margin-bottom: 15px;
 }
-#view_forum .card {
+#view_forum .thread_card {
   margin-top: 5px;
   background-color: white;
   box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
   padding: 15px 30px;
   display: flex;
 }
-#view_forum .card .icon {
+#view_forum .thread_card .icon {
   background-color: lightskyblue;
   color: white;
   width: 48px;
@@ -19,19 +19,19 @@
   border-radius: 50%;
   margin-right: 20px;
 }
-#view_forum .card .title {
+#view_forum .thread_card .title {
   font-size: 18px;
 }
-#view_forum .card .info {
+#view_forum .thread_card .info {
   color: dimgray;
 }
-#view_forum .card .info .user {
+#view_forum .thread_card .info .user {
   font-weight: bold;
 }
-#view_forum .card .content {
+#view_forum .thread_card .content {
   margin-top: 10px;
 }
-#view_forum .card .tag {
+#view_forum .thread_card .tag {
   margin-top: 10px;
   width: 100%;
   padding: 5px 10px;

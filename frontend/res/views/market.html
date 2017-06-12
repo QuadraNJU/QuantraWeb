@@ -4,7 +4,7 @@
     <div class="header">
         <h1>市场温度计</h1>
         <div>
-            <i class="mdi mdi-18px mdi-calendar"></i> 日期选择
+            <i class="mdi mdi-calendar"></i> 日期选择
             <datepicker v-model="date" :disabled-days-of-Week="disabled_days" format="yyyy-MM-dd"></datepicker>
         </div>
     </div>
@@ -19,32 +19,29 @@
             下跌 ({{ market.declined }})
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-12">
-            <h3><i class="mdi mdi-36px mdi-chart-line"></i> 近两周交易量趋势</h3>
-            <div id="volume_chart"></div>
+    <div class="card">
+        <div class="title">
+            <i class="mdi mdi-chart-line"></i> 近两周交易量趋势
         </div>
+        <div id="volume_chart"></div>
     </div>
     <div class="row">
         <div class="col-md-6">
-            <h3><i class="mdi mdi-36px mdi-trending-up"></i> 今日涨停 ({{ market.surged_limit.length }})</h3>
-            <minilist :stocks="market.surged_limit"></minilist>
+            <div class="card">
+                <div class="title">
+                    <i class="mdi mdi-trending-up"></i> 今日领涨
+                </div>
+                <minilist :stocks="market.top_surge"></minilist>
+            </div>
         </div>
 
         <div class="col-md-6">
-            <h3><i class="mdi mdi-36px mdi-trending-down"></i> 今日跌停 ({{ market.decline_limit.length }})</h3>
-            <minilist :stocks="market.decline_limit"></minilist>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-6">
-            <h3><i class="mdi mdi-36px mdi-trending-up"></i> 上涨超 5% ({{ market.surged_over_five_per.length }})</h3>
-            <minilist :stocks="market.surged_over_five_per"></minilist>
-        </div>
-
-        <div class="col-md-6">
-            <h3><i class="mdi mdi-36px mdi-trending-down"></i> 下跌超 -5% ({{ market.decline_over_five_per.length }})</h3>
-            <minilist :stocks="market.decline_over_five_per"></minilist>
+            <div class="card">
+                <div class="title">
+                    <i class="mdi mdi-trending-down"></i> 今日领跌
+                </div>
+                <minilist :stocks="market.top_decline"></minilist>
+            </div>
         </div>
     </div>
 </div>
@@ -61,7 +58,7 @@
             },
             components: {
                 'minilist': {
-                    template: '<table class="table table-hover"><thead><tr><th>股票代码</th><th>股票名称</th><th>收盘价</th><th>涨幅</th></tr></thead><tbody><tr v-for="stk in stocks" v-on:click="rowClick" v-bind:data-code="stk.code"><td>{{ code(stk.code) }}</td><td>{{ stk.name }}</td><td>{{ stk.close }}</td><td>{{ percent(stk.rate) }}</td></tr></tbody></table>',
+                    template: '<table class="table table-hover"><thead><tr><th>股票代码</th><th>股票名称</th><th>收盘价</th><th>涨幅</th></tr></thead><tbody><tr v-for="stk in stocks" v-on:click="rowClick" v-bind:data-code="stk.code" v-bind:class="{ red: stk.rate > 0, green: stk.rate < 0 }"><td>{{ code(stk.code) }}</td><td>{{ stk.name }}</td><td>{{ stk.close }}</td><td>{{ percent(stk.rate) }}</td></tr></tbody></table>',
                     props: ['stocks'],
                     methods: {
                         code: app.utils.formatCode,
@@ -78,7 +75,7 @@
                     if (date != '') {
                         app.views.setParam({date: date});
                         app.modals.showLoading('正在加载市场信息');
-                        $.getJSON('/api/stock/market?date=' + date, function (result) {
+                        app.requests.get('/api/stock/market?date=' + date, function (result) {
                             view_market.market = result;
                         }).always(function () {
                             app.modals.hideLoading();

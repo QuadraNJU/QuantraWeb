@@ -47,7 +47,7 @@ def get_history_list(request):
         for his in histories:
             strategy = Strategy.objects.filter(id=his.strategy)
             if not strategy:
-                name = '// 策略不存在的'
+                name = '[ 策略已被删除 ]'
             else:
                 name = strategy[0].name
             args = json.loads(his.parameter)

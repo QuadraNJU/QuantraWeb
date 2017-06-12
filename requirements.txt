@@ -38,13 +38,17 @@
 # users\views.py: 4,5
 Django == 1.11.2
 
+# stock\views.py: 110
+Keras == 2.0.4
+
 # stock\data\stock_data.py: 4
 SQLAlchemy == 1.1.10
 
 # stock\data\stock_charts_util.py: 5
 # stock\data\stock_util.py: 1
+# stock\predict_util\lstm.py: 1
 # trade\backtest_engine.py: 6
-numpy == 1.13.0
+numpy == 1.13.0+mkl
 
 # stock\data\qtshare.py: 1
 # stock\data\stock_data.py: 3

@@ -53,35 +53,43 @@
                     </div>
                 </div>
                 <div>
-                    <h4><i class="mdi mdi-script"></i> 策略简介</h4>
-                    <bs-input v-model="detail.description" type="textarea"></bs-input>
-                    <h4><i class="mdi mdi-code-tags"></i> 参数列表</h4>
-                    <table class="table table-params">
-                        <thead>
-                        <tr>
-                            <th>变量名</th>
-                            <th>默认值</th>
-                            <th>参数描述</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="(param, index) in detail.params">
-                            <td><bs-input v-model="param.var" placeholder="变量名"></bs-input></td>
-                            <td><bs-input v-model="param.default" placeholder="默认值"></bs-input></td>
-                            <td><bs-input v-model="param.description" placeholder="参数描述"></bs-input></td>
-                            <td><button class="btn btn-danger" @click="deleteParam(index)"><i class="mdi mdi-delete"></i></button></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    <button class="btn btn-success" v-on:click="addParam">
-                        <i class="mdi mdi-plus"></i> 添加参数
-                    </button>
-                    <h4><i class="mdi mdi-language-python"></i> 策略代码</h4>
-                    <div id="code_editor" style="height: 500px;"># Python Code Here</div>
+                    <div class="card">
+                        <div class="title"><i class="mdi mdi-script"></i> 策略简介</div>
+                        <bs-input v-model="detail.description" type="textarea"></bs-input>
+                    </div>
+                    <div class="card">
+                        <div class="title"><i class="mdi mdi-code-tags"></i> 参数列表</div>
+                        <table class="table table-params">
+                            <thead>
+                            <tr>
+                                <th>变量名</th>
+                                <th>默认值</th>
+                                <th>参数描述</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(param, index) in detail.params">
+                                <td><bs-input v-model="param.var" placeholder="变量名"></bs-input></td>
+                                <td><bs-input v-model="param.default" placeholder="默认值"></bs-input></td>
+                                <td><bs-input v-model="param.description" placeholder="参数描述"></bs-input></td>
+                                <td><button class="btn btn-danger" @click="deleteParam(index)"><i class="mdi mdi-delete"></i></button></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <button class="btn btn-success" v-on:click="addParam">
+                            <i class="mdi mdi-plus"></i> 添加参数
+                        </button>
+                    </div>
+                    <div class="card">
+                        <div class="title"><i class="mdi mdi-language-python"></i> 策略代码</div>
+                        <div id="code_editor" style="height: 500px;"># Python Code Here</div>
+                    </div>
                 </div>
             </div>
-            <div v-else>
+            <div v-else class="no_select">
+                <div><i class="mdi mdi-vector-selection" style="font-size: 150px;"></i></div>
+                <div style="font-size: 20px;">从左侧选择一个策略开始吧~</div>
             </div>
         </div>
     </div>

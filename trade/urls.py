@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from trade import stockpool_view, strategy_view, backtest_view
+from trade import stockpool_view, strategy_view, backtest_view, simulate_view
 
 urlpatterns = [
     url(r'^pool/get$', stockpool_view.readPool),
@@ -17,4 +17,9 @@ urlpatterns = [
 
     url(r'^backtest/gethistorylist$', backtest_view.get_history_list),
     url(r'^backtest/gethistory$', backtest_view.get_history),
+
+    url(r'^simulate/init$', simulate_view.init_account),
+    url(r'^simulate/getlist$', simulate_view.list),
+    url(r'^simulate/trade$', simulate_view.trade),
+    url(r'^simulate/getprice$', simulate_view.latest_price),
 ]
