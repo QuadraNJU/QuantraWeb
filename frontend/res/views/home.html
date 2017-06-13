@@ -1,43 +1,79 @@
 <link rel="stylesheet" href="res/styles/home.css">
 
 <div class="home">
-    <h1>非专业股票分析系统</h1>
-    <h2>市场温度计、历史行情、实时行情、对比回测，以及更多</h2>
+    <h1>专业股票分析系统</h1>
+    <h2>实时行情、走势预测、高级回测、模拟交易，以及更多</h2>
     <button type="button" class="btn btn-danger" onclick="app.views.load('market');">
         开始你的股票之旅
     </button>
 </div>
 
-<div class="advantage1">
-  <div class="col-sm-3 col-md-4">
-      <h3>
-          <i class="mdi mdi-view-list"></i>
-          梁家銘說他來想
-      </h3>
-      <p>我也不知道這裡要寫什麼</p>
-  </div>
+<div class="fix-width">
+    <div class="row">
+        <div class="col-sm-4">
+            <h3><i class="mdi mdi-clock"></i> 实时行情</h3>
+            <p>
+                行情数据实时更新，配合 WebSocket 通讯技术，带来流畅的实时行情体验。
+            </p>
+            <button class="btn btn-primary" onclick="app.views.load('stockpool', {realtime: 1})">
+                进入实时行情 &gt;
+            </button>
+        </div>
+
+        <div class="col-sm-4">
+            <h3><i class="mdi mdi-chart-line"></i> 股票走势预测</h3>
+            <p>
+                结合当下流行的机器学习技术，使用 LSTM 模型和 RNN 神经网络预测股票的未来走势。
+            </p>
+            <button class="btn btn-primary" onclick="app.views.load('stock', {code: 1})">
+                去试试看 &gt;
+            </button>
+        </div>
+
+        <div class="col-sm-4">
+            <h3><i class="mdi mdi-history"></i> 高级回测</h3>
+            <p>
+                接近业界标准的 Python 自定义策略，为专业量化交易员提供充足的发挥空间。
+            </p>
+            <button class="btn btn-primary" onclick="app.views.load('strategy')">
+                去回测 &gt;
+            </button>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 30px;">
+        <div class="col-sm-4">
+            <h3><i class="mdi mdi-shopping"></i> 策略市场</h3>
+            <p>
+                不会自己编写策略？到策略市场寻找大佬编写的策略，即点即用。
+            </p>
+            <button class="btn btn-primary" onclick="app.views.load('strategy_market')">
+                寻找大佬的策略 &gt;
+            </button>
+        </div>
+
+        <div class="col-sm-4">
+            <h3><i class="mdi mdi-square-inc-cash"></i> 模拟交易</h3>
+            <p>
+                不想玩量化交易？模拟交易功能为你带来传统的炒股体验。
+            </p>
+            <button class="btn btn-primary" onclick="app.views.load('simulate')">
+                马上开始交易 &gt;
+            </button>
+        </div>
+
+        <div class="col-sm-4">
+            <h3><i class="mdi mdi-forum"></i> 讨论区</h3>
+            <p>
+                想和其他用户交流？我们为您准备了简洁的讨论区。
+            </p>
+            <button class="btn btn-primary" onclick="app.views.load('forum')">
+                马上去水 &gt;
+            </button>
+        </div>
+    </div>
 </div>
 
-<div class="advantage2">
-  <div class="col-sm-3 col-md-4">
-        <h3>
-            <i class="mdi mdi-view-list"></i>
-            梁家銘說他來想
-        </h3>
-        <p>我也不知道這裡要寫什麼</p>
-
-  </div>
-</div>
-
-<div class="advantage3">
-  <div class="col-sm-3 col-md-4">
-        <h3>
-            <i class="mdi mdi-view-list"></i>
-            梁家銘說他來想
-        </h3>
-        <p>我也不知道這裡要寫什麼</p>
-
-  </div>
-</div>
-
-
+<footer>
+    Crafted with ❤ by <a href="https://github.com/QuadraNJU" target="_blank">Quadra</a>. &copy; 2017
+</footer>

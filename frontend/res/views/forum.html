@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="res/styles/forum.css">
+<script type="text/javascript" src="res/js/vue-paginate.min.js"></script>
 
 <div id="view_forum" class="fix-width">
     <div class="header">
@@ -10,20 +11,24 @@
         </button>
     </div>
     <div v-if="selected <= 0">
-        <div class="thread_card" v-for="t in threads">
-            <div class="icon">
-                <i class="mdi mdi-format-quote-open"></i>
-            </div>
-            <div>
-                <div class="title">
-                    <a href="javascript:" @click="selected = t.id">{{ t.title }}</a>
+        <paginate name="threads" :list="threads" :per="10" tag="div">
+            <div class="thread_card" v-for="t in paginated('threads')">
+                <div class="icon">
+                    <i class="mdi mdi-format-quote-open"></i>
                 </div>
-                <div class="info">
-                    由 <span class="user">{{ t.username }}</span> 发表于 {{ t.time }} |
-                    最后回复 {{ t.last_reply }}
+                <div>
+                    <div class="title">
+                        <a href="javascript:" @click="selected = t.id">{{ t.title }}</a>
+                    </div>
+                    <div class="info">
+                        由 <span class="user">{{ t.username }}</span> 发表于 {{ t.time }} |
+                        最后回复 {{ t.last_reply }}
+                    </div>
                 </div>
             </div>
-        </div>
+        </paginate>
+        <paginate-links for="threads" :limit="20" :show-step-links="true"
+                        class="pagination" style="margin-bottom: 0;"></paginate-links>
     </div>
     <div v-else>
         <div class="thread_card">
@@ -100,7 +105,8 @@
                 stock_list: [],
                 selected: 0,
                 thread: {},
-                replies: []
+                replies: [],
+                paginate: ['threads']
             },
             watch: {
                 selected: function () {
@@ -142,6 +148,13 @@
                     if (this.selected > 0) {
                         this.new_t.title = '';
                         this.new_t.tag = '';
+                        if (this.new_t.content == '') {
+                            app.modals.alert('warning', '提示', '请输入回复内容');
+                            return;
+                        }
+                    } else if (this.new_t.content == '' || this.new_t.title == '') {
+                        app.modals.alert('warning', '提示', '请输入标题和内容');
+                        return;
                     }
                     app.modals.showLoading('正在发表');
                     app.requests.post('/api/forum/new', {

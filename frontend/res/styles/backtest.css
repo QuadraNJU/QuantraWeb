@@ -12,6 +12,21 @@
 #view_backtest .block {
   margin-left: 30px;
 }
+#view_backtest .backtest_result {
+  display: flex;
+  padding: 10px 0;
+}
+#view_backtest .backtest_result > div {
+  flex: 1;
+  text-align: center;
+}
+#view_backtest .backtest_result > div > :first-child {
+  color: dimgray;
+  font-size: 14px;
+}
+#view_backtest .backtest_result > div > :last-child {
+  font-size: 28px;
+}
 #view_backtest .table .form-group {
   margin: 0;
 }

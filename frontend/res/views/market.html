@@ -29,7 +29,26 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="title">
-                    <i class="mdi mdi-trending-up"></i> 今日领涨
+                    <i class="mdi mdi-trending-up"></i> 领涨行业
+                </div>
+                <industrylist myclass="red" :industries="market.top_industries"></industrylist>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="title">
+                    <i class="mdi mdi-trending-down"></i> 领跌行业
+                </div>
+                <industrylist myclass="green" :industries="market.last_industries"></industrylist>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="title">
+                    <i class="mdi mdi-trending-up"></i> 领涨个股
                 </div>
                 <minilist :stocks="market.top_surge"></minilist>
             </div>
@@ -38,7 +57,7 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="title">
-                    <i class="mdi mdi-trending-down"></i> 今日领跌
+                    <i class="mdi mdi-trending-down"></i> 领跌个股
                 </div>
                 <minilist :stocks="market.top_decline"></minilist>
             </div>
@@ -58,13 +77,23 @@
             },
             components: {
                 'minilist': {
-                    template: '<table class="table table-hover"><thead><tr><th>股票代码</th><th>股票名称</th><th>收盘价</th><th>涨幅</th></tr></thead><tbody><tr v-for="stk in stocks" v-on:click="rowClick" v-bind:data-code="stk.code" v-bind:class="{ red: stk.rate > 0, green: stk.rate < 0 }"><td>{{ code(stk.code) }}</td><td>{{ stk.name }}</td><td>{{ stk.close }}</td><td>{{ percent(stk.rate) }}</td></tr></tbody></table>',
+                    template: '<table class="table table-striped table-hover"><thead><tr><th>股票代码</th><th>股票名称</th><th>收盘价</th><th>涨幅</th></tr></thead><tbody><tr v-for="stk in stocks" v-on:click="rowClick" v-bind:data-code="stk.code" v-bind:class="{ red: stk.rate > 0, green: stk.rate < 0 }"><td>{{ code(stk.code) }}</td><td>{{ stk.name }}</td><td>{{ stk.close }}</td><td>{{ percent(stk.rate) }}</td></tr></tbody></table>',
                     props: ['stocks'],
                     methods: {
                         code: app.utils.formatCode,
                         percent: app.utils.formatPercent,
                         rowClick: function (e) {
                             app.views.load('stock', {code: e.currentTarget.dataset.code});
+                        }
+                    }
+                },
+                'industrylist': {
+                    template: '<table class="table table-striped table-hover"><thead><tr><th>版块名称</th><th>股票数量</th><th>上涨数量</th><th>上涨占比</th></tr></thead><tbody><tr v-for="ind in industries" v-bind:class="myclass" v-bind:data-pool="ind.name" v-on:click="rowClick"><td>{{ ind.name }}</td><td>{{ ind.total }}</td><td>{{ ind.count }}</td><td>{{ percent(ind.rate) }}</td></tr></tbody></table>',
+                    props: ['myclass', 'industries'],
+                    methods: {
+                        percent: app.utils.formatPercent,
+                        rowClick: function (e) {
+                            app.views.load('stockpool', {pool: e.currentTarget.dataset.pool});
                         }
                     }
                 }
@@ -97,9 +126,6 @@
                     toolbox: {
                         show: true,
                         feature: {
-                            dataZoom: {},
-                            magicType: {type: ['line', 'bar']},
-                            restore: {},
                             saveAsImage: {}
                         }
                     },
@@ -109,6 +135,9 @@
                         data: this.market.volumes
                     }]
                 });
+            },
+            methods: {
+                percent: app.utils.formatPercent
             }
         });
         if (app.views.param.date) {

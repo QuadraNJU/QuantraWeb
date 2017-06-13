@@ -1,5 +1,4 @@
 @import '../bootstrap/css/bootstrap.min.css';
-@import '../bootstrap/css/bootstrap-table.min.css';
 @import '../bootstrap/css/materialdesignicons.min.css';
 body {
   font-family: "Pingfang SC", "Source Han Sans SC", "Microsoft Yahei", Helvetica, Arial, sans-serif;
@@ -20,16 +19,17 @@ body {
 }
 .box .switch {
   margin-top: 30px;
+  margin-bottom: 20px;
   color: white;
   font-size: 20px;
+  display: flex;
 }
 .box .switch > div {
-  display: inline-block;
-  margin: 0 15px;
+  flex: 1;
+  padding: 10px 0;
+  border-bottom: 1px solid white;
+  cursor: pointer;
 }
-.box .form-group {
-  margin-top: 30px;
-}
-.box .form-group > div {
-  margin-top: 10px;
+.box .switch .act {
+  border-bottom-width: 2px;
 }

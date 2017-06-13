@@ -12,11 +12,11 @@
         <div class="account_info">
             <div>
                 <div>总资产</div>
-                <div>{{ assets }}</div>
+                <div>{{ assets.toFixed(2) }}</div>
             </div>
             <div>
                 <div>可用资产（现金）</div>
-                <div>{{ cash }}</div>
+                <div>{{ cash.toFixed(2) }}</div>
             </div>
             <div>
                 <div>当前收益率</div>
@@ -141,7 +141,7 @@
                 },
                 loadHint: function () {
                     this.hint = '';
-                    if (this.trade.stock && this.trade.stock != '') {
+                    if (this.trade.stock && this.trade.stock > 0) {
                         app.requests.get('/api/trade/simulate/getprice?code=' + this.trade.stock, function (res) {
                             var hint = '当前价格：' + res.price + "，";
                             if (view_simulate.trade.op == 'buy') {
@@ -161,11 +161,23 @@
                     }
                 },
                 doTrade: function () {
+                    if (!this.stock_select || this.stock_select == '') {
+                        app.modals.alert('warning', '提示', '请选择一支股票');
+                        return;
+                    }
+                    if (!this.trade.amount || this.trade.amount <= 0) {
+                        app.modals.alert('warning', '提示', '请输入 >= 0 的交易数量');
+                        return;
+                    }
                     app.modals.showLoading('正在提交交易');
                     app.requests.post('/api/trade/simulate/trade', {
                         code: (this.trade.stock > 0) ? this.trade.stock : Number(this.stock_select),
                         amount: (this.trade.op == 'buy') ? this.trade.amount : -Number(this.trade.amount)
                     }, function () {
+                        app.modals.alert('success', '提示', '交易成功');
+                        view_simulate.trade.stock = 0;
+                        view_simulate.trade.amount = '';
+                        view_simulate.stock_select = '';
                         view_simulate.loadAccount();
                     }).always(function () {
                         app.modals.hideLoading();

@@ -26,8 +26,11 @@ var app = {
             } else {
                 this.param = {};
             }
-            window.history.replaceState(null, null, '#' + hash);
-            //window.location.hash = hash;
+            if (clear) {
+                window.history.pushState(null, null, '#' + hash);
+            } else {
+                window.history.replaceState(null, null, '#' + hash);
+            }
         },
         load: function (name, param) {
             app.modals.showLoading('正在加载页面');

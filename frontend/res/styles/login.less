@@ -1,6 +1,4 @@
 @import '../bootstrap/css/bootstrap.min.css';
-// @import '../bootstrap/css/bootstrap-theme.min.css';
-@import '../bootstrap/css/bootstrap-table.min.css';
 @import '../bootstrap/css/materialdesignicons.min.css';
 
 body {
@@ -25,20 +23,20 @@ body {
 
   .switch {
     margin-top: 30px;
+    margin-bottom: 20px;
     color: white;
     font-size: 20px;
+    display: flex;
 
     >div {
-      display: inline-block;
-      margin: 0 15px;
+      flex: 1;
+      padding: 10px 0;
+      border-bottom: 1px solid white;
+      cursor: pointer;
     }
-  }
 
-  .form-group {
-    margin-top: 30px;
-
-    >div {
-      margin-top: 10px;
+    .act {
+      border-bottom-width: 2px;
     }
   }
 }

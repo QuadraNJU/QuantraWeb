@@ -9,7 +9,6 @@
     <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vue-strap.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/echarts.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/sha256.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/app.js' %}"></script>
     <title>Quantra</title>
 </head>
@@ -55,70 +54,11 @@
     <div id="userinfo">
         <img src="res/images/nohead.jpg">
         <span v-if="username != ''">
-            你好，{{username}}
-            <a href="javascript:" v-on:click="doLogout">退出</a>
+            你好，{{username}} <a href="javascript:" v-on:click="doLogout">退出</a>
         </span>
         <span v-else>
-            你好，请
-            <a href="javascript:" @click="showLogin = true">登录</a> 或
-            <a href="javascript:" @click="showReg = true">注册</a>
+            你好，请 <a href="javascript:" v-on:click="goLogin">登录或注册</a>
         </span>
-        <modal v-model="showLogin" effect="fade">
-            <div slot="modal-header" class="modal-header">
-                <h4 class="modal-title">
-                    用户登录
-                </h4>
-            </div>
-            <div class="form-horizontal">
-                <div class="row">
-                    <label class="col-sm-2 control-label">用户名</label>
-                    <div class="col-sm-6">
-                        <input type="text" class="form-control" v-model="input_username">
-                    </div>
-                </div>
-                <div class="row" style="margin-top: 10px;">
-                    <label class="col-sm-2 control-label">密码</label>
-                    <div class="col-sm-6">
-                        <input type="password" class="form-control" v-model="input_password">
-                    </div>
-                </div>
-            </div>
-            <div slot="modal-footer" class="modal-footer">
-                <button type="button" class="btn btn-primary" v-on:click="doLogin">登录</button>
-                <button type="button" class="btn btn-default" @click="showLogin = false">关闭</button>
-            </div>
-        </modal>
-        <modal v-model="showReg" effect="fade">
-            <div slot="modal-header" class="modal-header">
-                <h4 class="modal-title">
-                    用户注册
-                </h4>
-            </div>
-            <div class="form-horizontal">
-                <div class="row">
-                    <label class="col-sm-2 control-label">用户名</label>
-                    <div class="col-sm-6">
-                        <input type="text" class="form-control" v-model="input_username">
-                    </div>
-                </div>
-                <div class="row" style="margin-top: 10px;">
-                    <label class="col-sm-2 control-label">密码</label>
-                    <div class="col-sm-6">
-                        <input type="password" class="form-control" v-model="input_password">
-                    </div>
-                </div>
-                <div class="row" style="margin-top: 10px;">
-                    <label class="col-sm-2 control-label">确认密码</label>
-                    <div class="col-sm-6">
-                        <input type="password" class="form-control" v-model="input_password2">
-                    </div>
-                </div>
-            </div>
-            <div slot="modal-footer" class="modal-footer">
-                <button type="button" class="btn btn-primary" v-on:click="doRegister">注册</button>
-                <button type="button" class="btn btn-default" @click="showReg = false">关闭</button>
-            </div>
-        </modal>
     </div>
 </header>
 <div id="modals">
@@ -183,7 +123,6 @@
                     if (this.loadingCount < 0) {
                         this.loadingCount = 0;
                     }
-                    $('body').css('overflow-y', 'auto');
                 }
             }
         });
@@ -196,7 +135,7 @@
             },
             methods: {
                 onSelect: function (item) {
-                    app.views.load('stock', {code: Number(item.split(' ')[0])});
+                    app.views.load('stock', {code: Number(item.split(' ')[0]), realtime: app.views.param.realtime});
                 }
             }
         });
@@ -206,51 +145,16 @@
             el: '#userinfo',
             data: {
                 username: '',
-                showLogin: false,
-                showReg: false,
-                input_username: '',
-                input_password: '',
-                input_password2: ''
             },
             methods: {
-                doLogin: function (e) {
-                    if (this.input_username != '' && this.input_password != '') {
-                        e.target.disabled = true;
-                        $.post("/api/user/login", {
-                            username: this.input_username,
-                            password: sha256(this.input_password)
-                        }, function (ret) {
-                            if (ret.ok) {
-                                user_info.username = ret.username;
-                            } else {
-                                alert('登录失败: ' + ret.msg);
-                            }
-                            e.target.disabled = false;
-                            user_info.showLogin = false;
-                        });
-                    }
-                },
-                doRegister: function (e) {
-                    if (this.input_username != '' && this.input_password != '' && this.input_password == this.input_password2) {
-                        e.target.disabled = true;
-                        $.post("/api/user/register", {
-                            username: this.input_username,
-                            password: sha256(this.input_password)
-                        }, function (ret) {
-                            if (ret.ok) {
-                                user_info.username = ret.username;
-                            } else {
-                                alert('注册失败: ' + ret.msg);
-                            }
-                            e.target.disabled = false;
-                            user_info.showReg = false;
-                        });
-                    }
+                goLogin: function () {
+                    location = '/login?' + encodeURIComponent(location.hash.substring(1));
                 },
                 doLogout: function () {
                     $.getJSON('/api/user/logout', function (ret) {
                         if (ret.ok) {
                             user_info.username = '';
+                            location.reload();
                         }
                     });
                 }
@@ -297,6 +201,11 @@
             window.onpopstate = loadPage;
             loadPage();
         });
+
+        setInterval(function () {
+            $('body').css('overflow-y', 'auto');
+            if (window.onresize) window.onresize();
+        }, 1000);
     })();
 </script>
 </body>

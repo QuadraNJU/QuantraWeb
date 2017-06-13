@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="res/styles/stockpool.css">
+<script type="text/javascript" src="res/js/vue-paginate.min.js"></script>
 
 <div id="view_stockpool" class="container-fluid">
     <div class="row">
@@ -7,7 +8,9 @@
             <accordion type="info">
                 <panel is-open header="基本版块">
                     <div class="list">
-                        <div v-for="pool in pools.base" @click="selected = pool" v-bind:class="{ act: selected.name == pool.name }">
+                        <div v-for="pool in pools.base" @click="selected = pool"
+                             v-bind:class="{ act: (!selected.id && selected.name == pool.name) || (selected.id > 0 && selected.id == pool.id) }"
+                             style="cursor: pointer;">
                             <i class="mdi mdi-format-list-bulleted"></i>
                             {{ pool.name }}
                         </div>
@@ -15,7 +18,9 @@
                 </panel>
                 <panel header="行业版块">
                     <div class="list">
-                        <div v-for="pool in pools.industries" @click="selected = pool" v-bind:class="{ act: selected.name == pool.name }">
+                        <div v-for="pool in pools.industries" @click="selected = pool"
+                             v-bind:class="{ act: (!selected.id && selected.name == pool.name) || (selected.id > 0 && selected.id == pool.id) }"
+                             style="cursor: pointer;">
                             <i class="mdi mdi-format-list-bulleted"></i>
                             {{ pool.name }}
                         </div>
@@ -26,7 +31,8 @@
                         <span v-if="pools.custom.length == 0">
                             暂无自选股票池
                         </span>
-                        <div v-for="pool in pools.custom" @click="selected = pool" v-bind:class="{ act: selected.name == pool.name }">
+                        <div v-for="pool in pools.custom" @click="selected = pool"
+                             v-bind:class="{ act: selected.id == pool.id }" style="cursor: pointer;">
                             <i class="mdi mdi-format-list-bulleted"></i>
                             {{ pool.name }}
                         </div>
@@ -74,21 +80,25 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="stk in stocks" v-bind:class="{ red: stk[7] > 0, green: stk[7] < 0 }"
-                    v-bind:data-code="stk[0]" v-on:click="rowClick">
-                    <td>{{ code(stk[0]) }}</td>
-                    <td>{{ stk[1] }}</td>
-                    <td>{{ percent(stk[7]) }}</td>
-                    <td>{{ stk[5] }}</td>
-                    <td>{{ stk[8] }}</td>
-                    <td>{{ stk[2] }}</td>
-                    <td>{{ stk[3] }}</td>
-                    <td>{{ stk[4] }}</td>
-                    <td>{{ stk[6] }}</td>
-                    <td v-if="realtime == 1">{{ percent(stk[9]) }}</td>
-                </tr>
+                <paginate name="stocks" :list="stocks" :per="15">
+                    <tr v-for="stk in paginated('stocks')" v-bind:class="{ red: stk[7] > 0, green: stk[7] < 0 }"
+                        v-bind:data-code="stk[0]" v-on:click="rowClick">
+                        <td>{{ code(stk[0]) }}</td>
+                        <td>{{ stk[1] }}</td>
+                        <td>{{ percent(stk[7]) }}</td>
+                        <td>{{ stk[5] }}</td>
+                        <td>{{ stk[8] }}</td>
+                        <td>{{ stk[2] }}</td>
+                        <td>{{ stk[3] }}</td>
+                        <td>{{ stk[4] }}</td>
+                        <td>{{ stk[6] }}</td>
+                        <td v-if="realtime == 1">{{ percent(stk[9]) }}</td>
+                    </tr>
+                </paginate>
                 </tbody>
             </table>
+            <paginate-links for="stocks" :limit="20" :show-step-links="true"
+                            class="pagination" style="margin-top: 0;"></paginate-links>
         </div>
     </div>
     <modal title="确认" v-model="confirmDelete">
@@ -115,7 +125,8 @@
                 stocks: [],
                 date: '',
                 realtime: app.views.param.realtime ? app.views.param.realtime : 0,
-                confirmDelete: false
+                confirmDelete: false,
+                paginate: ['stocks']
             },
             methods: {
                 code: app.utils.formatCode,
@@ -190,7 +201,11 @@
                 },
                 selected: function () {
                     if (this.selected.stocks) {
-                        app.views.setParam({pool: this.selected.name});
+                        if (this.selected.id) {
+                            app.views.setParam({pool: 'u:' + this.selected.name});
+                        } else {
+                            app.views.setParam({pool: this.selected.name});
+                        }
                     } else {
                         app.views.setParam({pool: undefined});
                     }
@@ -210,15 +225,19 @@
             if (app.views.param.pool) {
                 var merged = json.base.concat(json.industries).concat(json.custom);
                 for (var key in merged) {
-                    if (merged[key].name == app.views.param.pool) {
+                    if (merged[key].name == app.views.param.pool || 'u:' + merged[key].name == app.views.param.pool) {
                         view_stockpool.selected = merged[key];
                     }
                 }
             }
-            if (app.views.param.date) {
-                view_stockpool.date = app.views.param.date;
+            if (app.views.param.realtime == 1) {
+                view_stockpool.loadStocks();
             } else {
-                view_stockpool.date = app.index.max_date;
+                if (app.views.param.date) {
+                    view_stockpool.date = app.views.param.date;
+                } else {
+                    view_stockpool.date = app.index.max_date;
+                }
             }
         }).always(function () {
             app.modals.hideLoading();

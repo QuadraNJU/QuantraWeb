@@ -36,26 +36,28 @@ class Account:
         self.cash = self.portfolio = capital
         self.date_index = 0
         self.universe_data = stock_data[stock_data['code'].isin(universe)]
-        self.stocks = {}
+        self.today_data = None
+        self.price = {}
         self.sec_pos = {}
-        self.ref_price = {}
-        self.close_price = {}
 
     def set_date_index(self, date_index):
         self.date_index = date_index
-        self.stocks = self.universe_data[self.universe_data['date'] == trade_days[self.date_index]]
-        for index, info in self.stocks.iterrows():
-            self.ref_price[info['code']] = info['open']  # 今日开盘价
-            self.close_price[info['code']] = info['close']  # 今日收盘价
+        self.today_data = self.universe_data[self.universe_data['date'] == trade_days[self.date_index]]
+        self.price = {}
+        for index, info in self.today_data.iterrows():
+            self.price[info['code']] = info['close']  # 今日收盘价
         for stk in list(self.sec_pos.keys()):
             if self.sec_pos[stk] <= 0:
                 del self.sec_pos[stk]
+
+    def get_stocks(self):
+        return self.today_data['code'].tolist()
 
     def get_history(self, attr, days):
         if stock_data[attr].empty:
             return None
         result = {}
-        for index, _info in self.stocks.iterrows():
+        for index, _info in self.today_data.iterrows():
             try:
                 if stock_data.loc[index + days - 1]['code'] == _info['code']:
                     result[_info['code']] = stock_data[attr][index:index + days].tolist()
@@ -64,14 +66,14 @@ class Account:
         return result
 
     def trade(self, stock, target):
-        if target < 0 or not self.ref_price[stock]:
+        if target < 0 or not self.price[stock]:
             return
         if stock in self.sec_pos:
             curr_amount = self.sec_pos[stock]
         else:
             curr_amount = 0
         diff_amount = target - curr_amount  # 大于0买入，小于0卖出
-        new_cash = self.cash - diff_amount * self.ref_price[stock]
+        new_cash = self.cash - diff_amount * self.price[stock]
         if new_cash < 0:  # 拒绝交易
             return
         self.cash = new_cash
@@ -125,19 +127,19 @@ def run(args, ws):
         account.set_date_index(i)
         handler.handle(account)
         # portofolio
-        new_portfolio = account.cash
         if history_max_value < account.portfolio:
             history_max_value = account.portfolio
+        new_portfolio = account.cash
         for stk in account.sec_pos:
-            new_portfolio += account.sec_pos[stk] * account.close_price[stk]
+            new_portfolio += account.sec_pos[stk] * account.price[stk]
         account.portfolio = new_portfolio
         # earning rate
         earn_rate = (new_portfolio - capital) / capital
         daily_earn_rate.append(earn_rate)
         # base earning rate
         if i == start_date_index:
-            base_stock_price = numpy.mean(list(account.ref_price.values()))
-        today_base_earn_rate = (numpy.mean(list(account.close_price.values())) - base_stock_price) / base_stock_price
+            base_stock_price = numpy.mean(list(account.price.values()))
+        today_base_earn_rate = (numpy.mean(list(account.price.values())) - base_stock_price) / base_stock_price
         base_earn_rate.append(today_base_earn_rate)
         # update win times
         if earn_rate > today_base_earn_rate:

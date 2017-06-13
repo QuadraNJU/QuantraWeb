@@ -20,14 +20,17 @@
         <div class="prices">
             <div>
                 <div>当前价格</div>
-                <div v-bind:class="{ red: rate > 0, green: rate < 0 }">¥ {{ latest.price }}</div>
+                <div v-bind:class="{ red: rate > 0, green: rate < 0 }" v-if="latest.price > 0">
+                    ¥ {{ latest.price }}</div>
+                <div v-else>停牌中</div>
             </div>
             <div>
                 <div>涨跌幅</div>
-                <div v-bind:class="{ red: rate > 0, green: rate < 0 }">
+                <div v-bind:class="{ red: rate > 0, green: rate < 0 }" v-if="latest.price > 0">
                     <span v-if="rate >= 0">▲ {{ percent(rate) }}</span>
                     <span v-else>▼ {{ percent(rate) }}</span>
                 </div>
+                <div v-else>停牌中</div>
             </div>
             <div>
                 <div>昨收</div>
@@ -107,6 +110,28 @@
 
     <div class="card">
         <div class="title">
+            <i class="mdi mdi-timetable"></i> 股票走势预测
+        </div>
+        <div v-if="predict.done" class="prediction">
+            <div>
+                Quantra 预测下一交易日该股票会
+                <span class="red" v-if="predict.rate > 0">上涨</span>
+                <span v-if="predict.rate == 0">一动不动</span>
+                <span class="green" v-if="predict.rate < 0">下跌</span>
+            </div>
+            <div>
+                过去的 60 个交易日，Quantra 的预测准确率为 {{ percent(predict.success) }}
+            </div>
+        </div>
+        <div v-if="predict.error" class="prediction">
+            <div>看起来我们的神经网络不工作了</div>
+            <div>稍后再来试一下？</div>
+        </div>
+        <chart auto-resize v-if="!predict.error" :options="predictChart" ref="predictChart" style="height: 400px;"></chart>
+    </div>
+
+    <div class="card">
+        <div class="title">
             <i class="mdi mdi-newspaper"></i> 股票相关新闻
         </div>
         <div v-if="stock_news.length == 0">正在加载新闻 ...</div>
@@ -127,9 +152,6 @@
             </tbody>
         </table>
     </div>
-
-    <!--<h4><i class="mdi mdi-trending-up"></i> 股票走势预测</h4>
-    <div>{{ predict }}</div>-->
 </div>
 
 <script type="text/javascript">
@@ -274,6 +296,27 @@
             },
             series: []
         };
+        var predictChartOptions = {
+            animation: false,
+            xAxis: {data: []},
+            yAxis: {scale: true},
+            legend: {
+                data: ['预测涨幅', '实际涨幅']
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                }
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {}
+                }
+            },
+            series: []
+        };
 
         Vue.component('chart', VueECharts);
         Vue.component('button-group', VueStrap.buttonGroup);
@@ -294,9 +337,15 @@
                 rtData: {},
                 kChart: kChartOptions,
                 rtChart: rtChartOptions,
+                predictChart: predictChartOptions,
                 extraChart: 'vol',
                 stock_news: [],
-                predict: '正在加载走势预测 ...'
+                predict: {
+                    done: false,
+                    error: false,
+                    rate: 0,
+                    success: 0
+                }
             },
             computed: {
                 rate: function () {
@@ -360,7 +409,7 @@
                             };
                             view_stock.$refs.rtChart.mergeOptions({
                                 xAxis: [
-                                    { data: res.ticks }, { data: res.ticks }
+                                    {data: res.ticks}, {data: res.ticks}
                                 ],
                                 series: [
                                     {
@@ -423,11 +472,66 @@
                         view_stock.$refs.kChart.clear();
                         view_stock.$refs.kChart.mergeOptions(kChartOptions);
                     }
+                },
+                loadPredict: function () {
+                    view_stock.$refs.predictChart.showLoading();
+                    $.ajax({
+                        url: '/api/stock/predict?code=' + this.code,
+                        timeout: 60000,
+                        dataType: 'json',
+                        success: function (result, status, xhr) {
+                            if (result.ok == false) {
+                                view_stock.predict.error = true;
+                            } else {
+                                view_stock.predict.done = true;
+                                var rate = result.tomorrow;
+                                var success = 0;
+                                for (var i = 0; i < result.predict.length; i++) {
+                                    if (Math.sign(result.predict[i]) == Math.sign(result.real[i])) {
+                                        success++;
+                                    }
+                                }
+                                var success_rate = success / result.predict.length;
+                                if (success_rate < 0.5) {
+                                    success_rate = 1 - success_rate;
+                                    rate = -rate;
+                                    for (var i = 0; i < result.predict.length; i++) {
+                                        result.predict[i] = -result.predict[i];
+                                    }
+                                }
+                                view_stock.predict.rate = rate;
+                                view_stock.predict.success = success_rate;
+                                if (view_stock.$refs.predictChart) {
+                                    view_stock.$refs.predictChart.mergeOptions({
+                                        xAxis: {data: result.dates},
+                                        series: [
+                                            {
+                                                type: 'line',
+                                                name: '预测涨幅',
+                                                data: result.predict
+                                            },
+                                            {
+                                                type: 'line',
+                                                name: '实际涨幅',
+                                                data: result.real
+                                            }
+                                        ]
+                                    });
+                                }
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            view_stock.predict.error = true;
+                        }
+                    }).always(function () {
+                        view_stock.$refs.predictChart.hideLoading();
+                    });
                 }
             }
         });
 
         view_stock.loadStocks();
+        view_stock.loadPredict();
         app.requests.get('/api/stock/news?code=' + view_stock.code, function (res) {
             view_stock.stock_news = res;
         });

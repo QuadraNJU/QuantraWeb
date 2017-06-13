@@ -11,9 +11,8 @@
         </div>
         <div class="form-inline">
             <bs-input v-model="filter" type="text" placeholder="筛选股票"></bs-input>
-            <button class="btn btn-primary" v-on:click="shuffleClick">
-                <i class="mdi mdi-shuffle"></i> 手气不错
-            </button>
+            <button class="btn btn-default" v-on:click="allClick">全选</button>
+            <button class="btn btn-default" v-on:click="invertClick">反选</button>
             <button class="btn btn-success" v-on:click="saveClick">
                 <i class="mdi mdi-content-save"></i> 保存
             </button>
@@ -21,7 +20,6 @@
                 <i class="mdi mdi-cancel"></i> 取消
             </button>
         </div>
-        <spinner ref="spinner" size="xl" fixed text=""></spinner>
     </div>
     <div id="view_stockpool_edit_selection">
         <table>
@@ -36,7 +34,6 @@
 
 <script type="text/javascript">
     $(function () {
-        Vue.component('spinner', VueStrap.spinner);
         Vue.component('bs-input', VueStrap.input);
         Vue.component('checkbox', VueStrap.checkbox);
         var view_selection = new Vue({
@@ -89,10 +86,12 @@
             },
             methods: {
                 saveClick: function (e) {
-                    if (this.name == '') return;
+                    if (this.name == '' || view_selection.selected.length == 0) {
+                        app.modals.alert('warning', '提示', '请输入股票池名称并选择股票');
+                        return;
+                    }
                     this.$refs.spinner.show();
                     var stocks = [];
-                    console.log(view_selection.selected);
                     for (var code in view_selection.selected) {
                         if (view_selection.selected[code]) {
                             stocks.push(Number(code));
@@ -109,6 +108,20 @@
                 },
                 cancelClick: function (e) {
                     app.views.load('stockpool');
+                },
+                allClick: function () {
+                    var selected = Object.assign({}, view_selection.selected);
+                    for (var key in view_selection.stock_index) {
+                        selected[key] = true;
+                    }
+                    view_selection.selected = selected;
+                },
+                invertClick: function () {
+                    var selected = Object.assign({}, view_selection.selected);
+                    for (var key in view_selection.stock_index) {
+                        selected[key] = !selected[key];
+                    }
+                    view_selection.selected = selected;
                 },
                 shuffleClick: function (e) {
                     var selected = {};
@@ -127,7 +140,7 @@
         });
 
         if (app.views.param.id) {
-            view_header.$refs.spinner.show();
+            app.modals.showLoading('正在加载股票池');
             $.getJSON('/api/trade/pool/getbyid?id=' + app.views.param.id, function (res) {
                 view_header.name = res.name;
                 var selected = {};
@@ -136,8 +149,14 @@
                 }
                 view_selection.selected = selected;
             }).always(function () {
-                view_header.$refs.spinner.hide();
+                app.modals.hideLoading();
             })
+        } else {
+            var selected = {};
+            for (var key in app.index.stocks) {
+                selected[key] = false;
+            }
+            view_selection.selected = selected;
         }
     });
 </script>

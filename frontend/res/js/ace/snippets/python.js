@@ -3,12 +3,26 @@ ace.define("ace/snippets/python",["require","exports","module"], function(requir
 
 exports.snippetText = "snippet #!\n\
 \t#!/usr/bin/env python\n\
-snippet momentum_strategy\n\
-\t# 此为动量分析算法模板\n\t# @参数列表：\n\t# period: 股票持有周期\n\t#\n\t# 请在\"参数列表\"中添加上述变量\n\timport pandas\n\tdef handle(account):\n\t\thistory = account.get_history('adjclose', int(account.params['period']))\n\t\tmomentum = {'symbol': [], 'c_ret': []}\n\t\tfor stk in history:\n\t\t\tmomentum['symbol'].append(stk)\n\t\t\tmomentum['c_ret'].append(history[stk][-1] / history[stk][0])\n\t\t# 按照过去20日收益率排序，并且选择前20%的股票作为买入候选\n\t\tmomentum = pandas.DataFrame(momentum).sort_values(by='c_ret')\n\t\tmomentum = momentum[len(momentum) * 4 / 5:len(momentum)]  # 选择\n\t\tbuylist = momentum['symbol'].tolist()\n\t\tfor stk in account.sec_pos:\n\t\t\tif stk not in buylist:\n\t\t\t\taccount.trade(stk, 0)\n\t\t# 等权重买入所选股票\n\t\tfor stk in buylist:\n\t\t\tif stk not in account.sec_pos:\n\t\t\t\taccount.trade(stk, int(account.cash / account.ref_price[stk] / len(buylist) / 100.0) * 100)\n\t\n\
-snippet mean_reversion_strategy\n\
-\t# 此为均值回归算法模板\n\t# @参数列表：\n\t# period: 股票持有周期\n\t#\n\t# 请在\"参数列表\"中添加上述变量\n\timport pandas as pd\n\timport numpy as np\n\n\n\tdef handle(account):\n\t\thist = account.get_history('adjclose', int(account.params['period']))\n\t\tlis = {'symbol': [], 'bias': []}\n\t\tfor stk in hist:\n\t\t\t\t# 计算股票过去20天收盘平均值\n\t\t\t\tma20 = np.mean(hist[stk])\n\t\t\t\tbias = (ma20 - hist[stk][0]) / ma20\n\t\t\t\tlis['symbol'].append(stk)\n\t\t\t\tlis['bias'].append(bias)\n\n\t\tlis = pd.DataFrame(lis).sort_values(by='bias', ascending=False)[:10]\n\t\tbuylist = lis['symbol'].tolist()\n\t\tfor stk in account.sec_pos:\n\t\t\t\tif stk not in buylist:\n\t\t\t\t\t\taccount.trade(stk, 0)\n\t\t# 等权重买入所选股票\n\t\tfor stk in buylist:\n\t\t\t\tif stk not in account.sec_pos:\n\t\t\t\t\t\taccount.trade(stk, int(account.cash / account.ref_price[stk] / len(buylist) / 100.0) * 100)\n\n\
-snippet random_strategy\n\
-\t# 此为随机算法模板\n\t# @参数列表：无\n\timport random\n\tdef handle(account):\n\t\t# 在此处编写每个持有期的处理逻辑\n\t\tfor stk in account.sec_pos:\n\t\t\taccount.trade(stk, 0)\n\t\trand_stk = 0\n\t\trand_stk = list(account.ref_price.keys())[random.randint(0, len(account.ref_price) - 1)]\n\t\taccount.trade(rand_stk, int(account.cash / account.ref_price[rand_stk] / 100.0) * 100)\n\t\tpass\n\
+snippet account.params\n\
+\taccount.params\n\
+snippet account.cash\n\
+\taccount.cash\n\
+snippet account.portfolio\n\
+\taccount.portfolio\n\
+snippet account.sec_pos\n\
+\taccount.sec_pos[${1:stock}]\n\
+snippet account.price\n\
+\taccount.price[${1:stock}]\n\
+snippet account.universe_data\n\
+\taccount.universe_data\n\
+snippet account.today_data\n\
+\taccount.today_data\n\
+snippet account.get_stocks\n\
+\taccount.get_stocks()\n\
+snippet account.get_history\n\
+\taccount.get_history('${1:attr}', ${2:days})\n\
+snippet account.trade\n\
+\taccount.trade(${1:stock}, ${2:target})\n\
 snippet imp\n\
 \timport ${1:module}\n\
 snippet from\n\

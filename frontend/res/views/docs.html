@@ -1,0 +1,19 @@
+<script type="text/javascript" src="res/js/markdown.min.js"></script>
+
+<div class="fix-width" id="md_container" style="width: 800px;">
+</div>
+
+<script type="text/javascript">
+    (function () {
+        app.modals.showLoading('正在加载文档');
+        $.ajax({
+            url: 'res/docs/' + app.views.param.article + '.md',
+            timeout: 5000,
+            success: function (result, status, xhr) {
+                $('#md_container').html(markdown.toHTML(result));
+            }
+        }).always(function () {
+            app.modals.hideLoading();
+        });
+    })();
+</script>

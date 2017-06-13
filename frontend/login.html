@@ -9,29 +9,106 @@
     <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vue-strap.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/sha256.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/app.js' %}"></script>
     <title>用户登录</title>
 </head>
 {% verbatim %}
 <body>
-    <div class="box">
+    <div class="box" id="view">
         <img src="res/images/logo.png">
         <div class="switch">
-            <div>登录</div>
-            <div>注册</div>
+            <div v-bind:class="{ act: register == 0 }" @click="register = 0">登录</div>
+            <div v-bind:class="{ act: register == 1 }" @click="register = 1">注册</div>
         </div>
-        <div class="form-group">
+        <form v-if="register == 0" v-on:submit="doLogin">
+            <bs-input v-model="username" placeholder="用户名" :enter-submit="true">
+                <span slot="before" class="input-group-addon"><i class="mdi mdi-18px mdi-account"></i></span>
+            </bs-input>
+            <bs-input v-model="password" type="password" placeholder="密码" :enter-submit="true">
+                <span slot="before" class="input-group-addon"><i class="mdi mdi-18px mdi-key"></i></span>
+            </bs-input>
             <div>
-                <input class="form-control" type="text" placeholder="用户名">
+                <button class="form-control btn btn-success" v-on:click="doLogin" v-bind:disabled="disabled">登录</button>
             </div>
+        </form>
+        <form v-if="register == 1" v-on:submit="doRegister">
+            <bs-input v-model="username" placeholder="用户名">
+                <span slot="before" class="input-group-addon"><i class="mdi mdi-18px mdi-account"></i></span>
+            </bs-input>
+            <bs-input v-model="password" type="password" placeholder="密码">
+                <span slot="before" class="input-group-addon"><i class="mdi mdi-18px mdi-key"></i></span>
+            </bs-input>
+            <bs-input v-model="password2" type="password" placeholder="确认密码">
+                <span slot="before" class="input-group-addon"><i class="mdi mdi-18px mdi-key"></i></span>
+            </bs-input>
             <div>
-                <input class="form-control" type="password" placeholder="密码">
+                <button class="form-control btn btn-success" v-on:click="doRegister" v-bind:disabled="disabled">注册</button>
             </div>
-            <div>
-                <button class="form-control btn btn-success">登录</button>
-            </div>
-        </div>
+        </form>
     </div>
+
+    <script type="text/javascript">
+        (function () {
+            Vue.component('button-group', VueStrap.buttonGroup);
+            Vue.component('radio', VueStrap.radio);
+            Vue.component('bs-input', VueStrap.input);
+            var view = new Vue({
+                el: '#view',
+                data: {
+                    register: 0,
+                    username: '',
+                    password: '',
+                    password2: ''
+                },
+                methods: {
+                    doLogin: function (e) {
+                        if (this.username != '' && this.password != '') {
+                            e.target.disabled = true;
+                            $.post("/api/user/login", {
+                                username: this.username,
+                                password: sha256(this.password)
+                            }, function (ret) {
+                                if (ret.ok) {
+                                    location = '/#' + decodeURIComponent(location.search.substring(1));
+                                } else {
+                                    alert('登录失败: ' + ret.msg);
+                                }
+                            }).always(function () {
+                                e.target.disabled = false;
+                            });
+                        } else {
+                            alert('请输入用户名和密码');
+                        }
+                        return false;
+                    },
+                    doRegister: function (e) {
+                        if (this.username != '' && this.password != '') {
+                            if (this.password != this.password2) {
+                                alert('两次输入的密码不匹配');
+                                return;
+                            }
+                            e.target.disabled = true;
+                            $.post("/api/user/register", {
+                                username: this.username,
+                                password: sha256(this.password)
+                            }, function (ret) {
+                                if (ret.ok) {
+                                    location = '/#' + decodeURIComponent(location.search.substring(1));
+                                } else {
+                                    alert('注册失败: ' + ret.msg);
+                                }
+                                e.target.disabled = false;
+                            }).always(function () {
+                                e.target.disabled = false;
+                            });
+                        } else {
+                            alert('请输入用户名和密码');
+                        }
+                        return false;
+                    }
+                }
+            })
+        })();
+    </script>
 </body>
 {% endverbatim %}
 </html>

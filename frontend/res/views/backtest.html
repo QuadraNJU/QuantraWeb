@@ -2,34 +2,40 @@
 <script type="text/javascript" src="res/js/vue-echarts.js"></script>
 
 <div id="view_backtest" class="fix-width">
+    <div class="header">
+        <h1 v-if="strategy.id">{{ strategy.name }}</h1>
+        <h1 v-else>回测历史记录</h1>
+        <div>
+            <button class="btn btn-info" v-on:click="exportResult" v-if="progress == 100">
+                <i class="mdi mdi-export"></i> 导出回测结果
+            </button>
+            <button class="btn btn-primary" v-on:click="beginBacktest" v-if="strategy.id">
+                <i class="mdi mdi-play"></i> 开始回测
+            </button>
+        </div>
+    </div>
     <div v-if="strategy.id">
-        <div class="header">
-            <h1>{{ strategy.name }}</h1>
-            <div>
-                <button class="btn btn-primary" v-on:click="beginBacktest">
-                    <i class="mdi mdi-play"></i> 开始回测
-                </button>
+        <div class="card">
+            <div class="title"><i class="mdi mdi-settings"></i> 基本设置</div>
+            <div class="row form-inline">
+                <div class="col-sm-2"><i class="mdi mdi-calendar mdi-18px"></i> 日期选择</div>
+                <div class="col-sm-10">
+                    <datepicker v-model="dateStart" format="yyyy-MM-dd" placeholder="起始日期"></datepicker> -
+                    <datepicker v-model="dateEnd" format="yyyy-MM-dd" placeholder="结束日期"></datepicker>
+                    调仓周期 <bs-input v-model="freq"></bs-input>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2"><i class="mdi mdi-database mdi-18px"></i> 股票池选择</div>
+                <div class="col-sm-10">
+                    <v-select v-model="pools" multiple placeholder="选择一个或多个股票池" search clear-button>
+                        <v-option v-for="(pool, index) in pool_list" v-bind:value="index">{{ pool.name }}</v-option>
+                    </v-select>
+                </div>
             </div>
         </div>
-        <h4><i class="mdi mdi-settings"></i> 基本设置</h4>
-        <div class="block">
-            <div class="form-inline">
-                <i class="mdi mdi-calendar mdi-18px"></i> 日期选择
-                <datepicker v-model="dateStart" format="yyyy-MM-dd" placeholder="起始日期"></datepicker>
-                -
-                <datepicker v-model="dateEnd" format="yyyy-MM-dd" placeholder="结束日期"></datepicker>
-                调仓周期
-                <bs-input v-model="freq"></bs-input>
-            </div>
-            <div>
-                <i class="mdi mdi-database mdi-18px"></i> 股票池选择
-                <v-select v-model="pools" multiple placeholder="选择一个或多个股票池" search clear-button>
-                    <v-option v-for="(pool, index) in pool_list" v-bind:value="index">{{ pool.name }}</v-option>
-                </v-select>
-            </div>
-        </div>
-        <h4><i class="mdi mdi-code-tags"></i> 策略设置</h4>
-        <div class="block">
+        <div class="card">
+            <div class="title"><i class="mdi mdi-code-tags"></i> 策略设置</div>
             <table class="table" v-if="strategy.params && strategy.params.length > 0">
                 <thead>
                 <tr>
@@ -57,34 +63,71 @@
             </div>
         </div>
     </div>
-    <div>
+    <div id="export">
         <div v-if="progress > 0">
-            <div class="progress">
+            <div class="progress" v-if="progress < 100" style="margin-top: 10px;">
                 <progressbar :now="progress" label type="primary"></progressbar>
             </div>
-            <h4><i class="mdi mdi-chart-line"></i> 收益率对比</h4>
-            <div class="block">
-                <chart auto-resize :options="chart1" ref="chart1"></chart>
+            <div class="card" v-if="progress == 100">
+                <div class="title"><i class="mdi mdi-information-outline"></i> 回测结果</div>
+                <div class="backtest_result">
+                    <div>
+                        <div>年化收益率</div>
+                        <div>{{ percent(result.annualized) }}</div>
+                    </div>
+                    <div>
+                        <div>基准年化收益率</div>
+                        <div>{{ percent(result.base_annualized) }}</div>
+                    </div>
+                    <div>
+                        <div>策略胜率</div>
+                        <div>{{ percent(result.win_rate) }}</div>
+                    </div>
+                    <div>
+                        <div>Alpha</div>
+                        <div>{{ result.alpha.toFixed(3) }}</div>
+                    </div>
+                    <div>
+                        <div>Beta</div>
+                        <div>{{ result.beta.toFixed(3) }}</div>
+                    </div>
+                    <div>
+                        <div>夏普比率</div>
+                        <div>{{ result.sharp.toFixed(3) }}</div>
+                    </div>
+                    <div>
+                        <div>最大回撤</div>
+                        <div>{{ percent(result.max_drawdown) }}</div>
+                    </div>
+                </div>
             </div>
-            <h4><i class="mdi mdi-table-large"></i> 周期收益详情</h4>
-            <table class="table table-striped table-condensed">
-                <thead>
-                <tr>
-                    <th>调仓日期</th>
-                    <th>现金</th>
-                    <th>基准收益率(%)</th>
-                    <th>策略收益率(%)</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="r in results" v-bind:class="{ red: r.earn_rate > r.base_earn_rate, green: r.earn_rate < r.base_earn_rate }">
-                    <td>{{ r.date }}</td>
-                    <td>{{ r.cash }}</td>
-                    <td>{{ percent(r.base_earn_rate) }}</td>
-                    <td>{{ percent(r.earn_rate) }}</td>
-                </tr>
-                </tbody>
-            </table>
+            <div class="card">
+                <div class="title"><i class="mdi mdi-chart-line"></i> 收益率对比</div>
+                <div class="block">
+                    <chart auto-resize :options="chart1" ref="chart1"></chart>
+                </div>
+            </div>
+            <div class="card">
+                <div class="title"><i class="mdi mdi-table-large"></i> 周期收益详情</div>
+                <table class="table table-striped table-condensed">
+                    <thead>
+                    <tr>
+                        <th>调仓日期</th>
+                        <th>现金</th>
+                        <th>基准收益率(%)</th>
+                        <th>策略收益率(%)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="r in results" v-bind:class="{ red: r.earn_rate > r.base_earn_rate, green: r.earn_rate < r.base_earn_rate }">
+                        <td>{{ r.date }}</td>
+                        <td>{{ r.cash }}</td>
+                        <td>{{ percent(r.base_earn_rate) }}</td>
+                        <td>{{ percent(r.earn_rate) }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     <spinner v-model="loading" size="xl" fixed text="正在启动回测" style="z-index: 9999;"></spinner>
@@ -113,6 +156,7 @@
                 dateEnd: app.index.max_date,
                 progress: -1,
                 results: [],
+                result: {},
 
                 chart1: {
                     animation: false,
@@ -174,6 +218,7 @@
                         console.log(out);
                         if (out.success) {
                             _this.progress = 100;
+                            _this.result = out;
                         } else if (out.error) {
                             _this.progress = -1;
                             ws.close();
@@ -184,6 +229,9 @@
                             update_infos(_this.results);
                         }
                     };
+                },
+                exportResult: function () {
+                    window.print();
                 }
             }
         });
@@ -229,12 +277,15 @@
         app.requests.get('/api/trade/pool/get', function (res) {
             var list = [];
             for (var key in res['custom']) {
+                res['custom'][key].name = '[用户] ' + res['custom'][key].name;
                 list.push(res['custom'][key]);
             }
             for (var key in res['base']) {
+                res['base'][key].name = '[系统] ' + res['base'][key].name;
                 list.push(res['base'][key]);
             }
             for (var key in res['industries']) {
+                res['industries'][key].name = '[行业] ' + res['industries'][key].name;
                 list.push(res['industries'][key]);
             }
             view_backtest.pool_list = list;
@@ -248,6 +299,7 @@
                 var result = JSON.parse(res.history.result);
                 var param = JSON.parse(res.history.parameter);
                 view_backtest.progress = 100;
+                view_backtest.result = result.result;
                 view_backtest.results = result.infos;
                 setTimeout(function () { update_infos(result.infos); }, 0);
                 view_backtest.dateStart = param.start_date;

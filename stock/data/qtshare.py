@@ -1,3 +1,6 @@
+from datetime import datetime
+from io import StringIO
+
 import pandas
 import requests
 import tushare
@@ -8,6 +11,22 @@ def df_map(df, mapping):
     for key in mapping:
         new_df[key] = df[mapping[key]]
     return new_df
+
+
+def history_netease(code, date_start, date_end):
+    if code < 600000:
+        code += 1000000
+    r = requests.get('http://quotes.money.163.com/service/chddata.html?code=' + ('%07d' % code)
+                     + '&start=' + date_start.strftime('%Y%m%d') + '&end=' + date_end.strftime('%Y%m%d')
+                     + '&fields=TCLOSE;HIGH;LOW;TOPEN;VOTURNOVER')
+    df = pandas.read_csv(StringIO(r.text))
+    df['股票代码'] = pandas.to_numeric(df['股票代码'].str.slice(1))
+    return df_map(df, {'code': '股票代码', 'date': '日期', 'open': '开盘价', 'high': '最高价',
+                       'low': '最低价', 'close': '收盘价', 'volume': '成交量'})
+
+
+def history(code, date_start, date_end):
+    return history_netease(code, date_start, date_end)
 
 
 def today_list_netease():
@@ -69,5 +88,4 @@ def stock_news(code):
 
 
 if __name__ == '__main__':
-    # print today_list()
-    print(today_ticks_tushare(1))
+    print(history_netease(1, datetime(2017, 3, 31), datetime(2017, 6, 13)))

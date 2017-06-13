@@ -5,8 +5,8 @@
         <h1><i class="mdi mdi-shopping"></i> 策略市场</h1>
     </div>
     <div class="row">
-        <div class="item" v-for="s in strategies">
-            <div class="name">{{ s.name }}</div>
+        <div class="card" v-for="s in strategies">
+            <div class="title">{{ s.name }}</div>
             <div class="user"><i class="mdi mdi-account"></i> 由 {{ s.user }} 公开</div>
             <div class="time"><i class="mdi mdi-timer"></i> 最后更新于 {{ s.time }}</div>
             <div class="description"><i class="mdi mdi-format-quote-open"></i> {{ s.description }}</div>
