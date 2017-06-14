@@ -73,7 +73,9 @@
                 <div class="backtest_result">
                     <div>
                         <div>年化收益率</div>
-                        <div>{{ percent(result.annualized) }}</div>
+                        <div v-bind:class="{ red: result.annualized > result.base_annualized, green: result.annualized < result.base_annualized }">
+                            {{ percent(result.annualized) }}
+                        </div>
                     </div>
                     <div>
                         <div>基准年化收益率</div>
@@ -121,7 +123,7 @@
                     <tbody>
                     <tr v-for="r in results" v-bind:class="{ red: r.earn_rate > r.base_earn_rate, green: r.earn_rate < r.base_earn_rate }">
                         <td>{{ r.date }}</td>
-                        <td>{{ r.cash }}</td>
+                        <td>{{ r.cash.toFixed(2) }}</td>
                         <td>{{ percent(r.base_earn_rate) }}</td>
                         <td>{{ percent(r.earn_rate) }}</td>
                     </tr>
@@ -212,7 +214,11 @@
                             universe: universe
                         }));
                     };
-
+                    ws.onclose = function () {
+                        if (_this.progress > 0 && _this.progress < 100) {
+                            app.modals.alert('danger', '连接断开', '请检查网络条件或稍后重试');
+                        }
+                    },
                     ws.onmessage = function (msg) {
                         var out = JSON.parse(msg.data);
                         console.log(out);

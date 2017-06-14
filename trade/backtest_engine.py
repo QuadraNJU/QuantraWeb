@@ -1,6 +1,7 @@
 # coding=utf-8
 import imp
 import json
+import time
 from datetime import datetime, timedelta
 
 import numpy
@@ -54,7 +55,7 @@ class Account:
         return self.today_data['code'].tolist()
 
     def get_history(self, attr, days):
-        if stock_data[attr].empty:
+        if attr not in stock_data:
             return None
         result = {}
         for index, _info in self.today_data.iterrows():
@@ -66,7 +67,7 @@ class Account:
         return result
 
     def trade(self, stock, target):
-        if target < 0 or not self.price[stock]:
+        if target < 0 or stock not in self.price:
             return
         if stock in self.sec_pos:
             curr_amount = self.sec_pos[stock]
@@ -131,7 +132,8 @@ def run(args, ws):
             history_max_value = account.portfolio
         new_portfolio = account.cash
         for stk in account.sec_pos:
-            new_portfolio += account.sec_pos[stk] * account.price[stk]
+            if stk in account.price:
+                new_portfolio += account.sec_pos[stk] * account.price[stk]
         account.portfolio = new_portfolio
         # earning rate
         earn_rate = (new_portfolio - capital) / capital
@@ -164,5 +166,6 @@ def run(args, ws):
     result = {'success': True, 'annualized': annualized, 'max_drawdown': max_drawdown,
               'base_annualized': base_annualized, 'win_rate': win_rate, 'sharp': sharp, 'beta': beta, 'alpha': alpha}
     ws.send(json.dumps(result))
+    time.sleep(3)
 
     return {'infos': infos, 'result': result}

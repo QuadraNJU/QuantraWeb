@@ -90,7 +90,7 @@
                         app.modals.alert('warning', '提示', '请输入股票池名称并选择股票');
                         return;
                     }
-                    this.$refs.spinner.show();
+                    app.modals.showLoading('正在保存股票池');
                     var stocks = [];
                     for (var code in view_selection.selected) {
                         if (view_selection.selected[code]) {
@@ -102,7 +102,7 @@
                         name: this.name,
                         stocks: JSON.stringify(stocks)
                     }).always(function () {
-                        view_header.$refs.spinner.hide();
+                        app.modals.hideLoading();
                         app.views.load('stockpool', {pool: view_header.name});
                     });
                 },

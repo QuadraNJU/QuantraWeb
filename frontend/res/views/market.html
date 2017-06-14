@@ -93,7 +93,7 @@
                     methods: {
                         percent: app.utils.formatPercent,
                         rowClick: function (e) {
-                            app.views.load('stockpool', {pool: e.currentTarget.dataset.pool});
+                            app.views.load('stockpool', {pool: e.currentTarget.dataset.pool, date: view_market.date});
                         }
                     }
                 }

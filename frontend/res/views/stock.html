@@ -124,7 +124,7 @@
             </div>
         </div>
         <div v-if="predict.error" class="prediction">
-            <div>看起来我们的神经网络不工作了</div>
+            <div>我们的神经网络比较繁忙</div>
             <div>稍后再来试一下？</div>
         </div>
         <chart auto-resize v-if="!predict.error" :options="predictChart" ref="predictChart" style="height: 400px;"></chart>
@@ -370,6 +370,11 @@
                     kChartOptions.dataZoom[0].end = e.batch[0].end;
                     updateInfo(Math.floor(stock_data.dates.length * e.batch[0].end / 100));
                 },
+                resizeCharts: function () {
+                    this.$refs.predictChart && this.$refs.predictChart.resize();
+                    this.$refs.kChart && this.$refs.kChart.resize();
+                    this.$refs.rtChart && this.$refs.rtChart.resize();
+                },
                 loadStocks: function () {
                     if (app.modals.loadingCount > 0) return;
                     app.modals.showLoading('正在加载股票数据');
@@ -392,6 +397,7 @@
                             updateInfo(res.dates.length - 1);
                             view_stock.loadExtraChart(res);
                         }).always(function () {
+                            view_stock.resizeCharts();
                             app.modals.hideLoading();
                         });
                     } else if (this.realtime == 1) {
@@ -427,6 +433,7 @@
                                     }
                                 ]
                             });
+                            view_stock.resizeCharts();
                             app.modals.hideLoading();
                         }
                     }
@@ -519,6 +526,7 @@
                                     });
                                 }
                             }
+                            view_stock.resizeCharts();
                         },
                         error: function (xhr, status, error) {
                             view_stock.predict.error = true;

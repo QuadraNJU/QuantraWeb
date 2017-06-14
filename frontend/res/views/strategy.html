@@ -96,6 +96,9 @@
                             <a href="#docs?article=backtest_api" target="_blank">
                                 <i class="mdi mdi-information-outline"></i> 回测 API 文档
                             </a>
+                            <a href="#docs?article=qtshare_api" target="_blank">
+                                <i class="mdi mdi-information-outline"></i> QtShare 数据 API 文档
+                            </a>
                         </div>
                         <div id="code_editor" style="height: 500px;">{{ template }}</div>
                     </div>
@@ -143,6 +146,10 @@
                             view_strategy.detail = res.detail;
                             view_strategy.int_public = res.detail.is_public ? 1 : 0;
                             view_strategy.detail.params = JSON.parse(res.detail.parameters);
+                            if (editor) {
+                                editor.setValue(res.detail.code);
+                                editor.gotoLine(1);
+                            }
                         }).always(function () {
                             app.modals.hideLoading();
                         });
@@ -154,12 +161,6 @@
                             params: [],
                             is_public: false
                         };
-                    }
-                },
-                detail: function () {
-                    if (editor) {
-                        editor.setValue(this.detail.code);
-                        editor.gotoLine(1);
                     }
                 }
             },

@@ -20,7 +20,7 @@
             </div>
             <div>
                 <div>当前收益率</div>
-                <div v-bind:class="{ red: total_rate > 0, green: total_rate < 0 }">{{ total_rate }}%</div>
+                <div v-bind:class="{ red: total_rate > 0, green: total_rate < 0 }">{{ total_rate.toFixed(2) }}%</div>
             </div>
         </div>
     </div>
@@ -44,7 +44,7 @@
             <tbody>
             <tr v-for="po in positions" v-bind:class="{ red: po.price > po.buy_price, green: po.price < po.buy_price }">
                 <td>{{ code(po.code) }}</td>
-                <td>{{ getName(po.code) }}</td>
+                <td><a href="javascript:" @click="goStock(po.code)">{{ getName(po.code) }}</a></td>
                 <td>{{ po.buy_price }}</td>
                 <td>{{ po.price }}</td>
                 <td>{{ percent((po.price - po.buy_price) / po.buy_price) }}</td>
@@ -69,8 +69,8 @@
             <div class="row">
                 <label class="col-sm-1 control-label">操作</label>
                 <div class="col-sm-4" style="padding: 5px 15px;">
-                    <input v-model="trade.op" type="radio" value="buy"> 买入
-                    <input v-model="trade.op" type="radio" value="sell"> 卖出
+                    <input v-model="trade.op" type="radio" value="buy" v-on:click="loadHint"> 买入
+                    <input v-model="trade.op" type="radio" value="sell" v-on:click="loadHint"> 卖出
                 </div>
             </div>
             <div class="row">
@@ -118,6 +118,9 @@
                 percent: app.utils.formatPercent,
                 getName: function (code) {
                     return app.index.stocks[code].name;
+                },
+                goStock: function (code) {
+                    app.views.load('stock', {code: code, realtime: 1});
                 },
                 stock_hit: function (item) {
                     var selected = item.split(' ')[0];
@@ -178,6 +181,7 @@
                         view_simulate.trade.stock = 0;
                         view_simulate.trade.amount = '';
                         view_simulate.stock_select = '';
+                        view_simulate.hint = '';
                         view_simulate.loadAccount();
                     }).always(function () {
                         app.modals.hideLoading();

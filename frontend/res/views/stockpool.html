@@ -154,7 +154,14 @@
                 loadStocks: function () {
                     view_stockpool.stocks = [];
                     app.requests.wsClose();
-                    if (this.realtime == 0 && this.date != '') {
+                    if (this.realtime == 0) {
+                        if (this.date == '') {
+                            if (app.views.param.date) {
+                                this.date = app.views.param.date;
+                            } else {
+                                this.date = app.index.max_date;
+                            }
+                        }
                         app.modals.showLoading('正在加载股票行情');
                         app.requests.get('/api/stock/stock_list?date=' + this.date, function (result) {
                             stock_data = result;
@@ -230,15 +237,7 @@
                     }
                 }
             }
-            if (app.views.param.realtime == 1) {
-                view_stockpool.loadStocks();
-            } else {
-                if (app.views.param.date) {
-                    view_stockpool.date = app.views.param.date;
-                } else {
-                    view_stockpool.date = app.index.max_date;
-                }
-            }
+            view_stockpool.loadStocks();
         }).always(function () {
             app.modals.hideLoading();
         });

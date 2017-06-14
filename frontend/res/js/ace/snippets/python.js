@@ -4,7 +4,7 @@ ace.define("ace/snippets/python",["require","exports","module"], function(requir
 exports.snippetText = "snippet #!\n\
 \t#!/usr/bin/env python\n\
 snippet account.params\n\
-\taccount.params\n\
+\taccount.params['${1:name}']\n\
 snippet account.cash\n\
 \taccount.cash\n\
 snippet account.portfolio\n\

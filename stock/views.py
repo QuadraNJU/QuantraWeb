@@ -6,6 +6,8 @@ import time
 from datetime import datetime, timedelta
 
 import pandas
+import keras
+from stock.predict_util import lstm
 from django.http import HttpResponse, JsonResponse
 
 from dwebsocket import accept_websocket
@@ -132,9 +134,6 @@ def stock_news(request):
 
 
 def stock_predict(request):
-    import keras
-    from stock.predict_util import lstm
-
     code = int(request.GET['code'])
     info = StockData().get_info(code=code, limit=90).iloc[::-1]
     data = list(info['close'])

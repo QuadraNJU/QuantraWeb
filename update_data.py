@@ -15,6 +15,7 @@ if __name__ == '__main__':
             max_date = sd.get_info(code=code, limit=1).iloc[0]['date']
             start_date = max_date + timedelta(days=1)
             df = qts.history(code, start_date, end_date)
+            df = df[df['volume'] != 0]
             df['adjclose'] = df['close']
             print(df)
             df.to_sql('stock_data', sd.conn, index=False, if_exists='append')
